@@ -1,0 +1,13 @@
+{
+  "name": "erick-product-tools",
+  "owner": {
+    "name": "Erick"
+  },
+  "plugins": [
+    {
+      "name": "product-tools",
+      "source": "./",
+      "description": "Pipeline de refinamento de produto (pesquisa de mercado, engenharia, qualidade, escrita) e formatadores de User Story e Bug no padrão DoR."
+    }
+  ]
+}

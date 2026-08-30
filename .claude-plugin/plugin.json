@@ -1,0 +1,6 @@
+{
+  "name": "product-tools",
+  "version": "0.1.0",
+  "description": "Ferramentas de produto: pipeline de refinamento (pesquisa de mercado + engenharia + qualidade + escrita) e formatação direta de User Stories e Bugs no padrão DoR.",
+  "author": "Erick"
+}
