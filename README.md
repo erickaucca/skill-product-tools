@@ -11,6 +11,7 @@ de produto e a formatação direta de User Stories e Bugs no padrão DoR.
 | `refine` | skill | `/product-tools:refine` — pipeline completo: base de conhecimento (Confluence) → pesquisa de mercado → engenharia → qualidade → escrita da US |
 | `format-user-story` | skill | `/product-tools:format-user-story` — formata uma US diretamente, sem passar pelo pipeline |
 | `format-bug` | skill | `/product-tools:format-bug` — formata um bug diretamente, no padrão DoR |
+| `document-feature` | skill | `/product-tools:document-feature` — cria/atualiza no Confluence (espaço `nsseg`) páginas de funcionalidade, regra de negócio e histórico de mudanças, no template padrão |
 | `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
 
 Todas as skills também disparam automaticamente pelo contexto da conversa
@@ -55,10 +56,18 @@ Quero que o cliente consiga parcelar o pagamento do checkout em até 12x
 Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
 — o pipeline retoma da etapa que travou, sem reiniciar do zero.
 
+## Ciclo completo
+
+1. `/product-tools:refine` — lê a base de conhecimento (Confluence), refina e gera a US
+2. Time desenvolve e entrega a US (Azure DevOps)
+3. `/product-tools:document-feature` — atualiza a página da funcionalidade/regra
+   no `nsseg` e registra a US no histórico de mudanças. A próxima execução do
+   `/refine` já encontra a regra atualizada.
+
 ## Escopo do MVP (o que ainda não tem)
 
-- A base de conhecimento do Confluence é somente leitura: o `/refine` não cria
-  nem atualiza páginas
+- O `/refine` só lê o Confluence; escrita é feita apenas pelo `document-feature`,
+  sempre no espaço `nsseg`
 - Sem MCP de ADO: leitura/escrita de cards do Azure DevOps ainda não é feita
   por este plugin
 - Sem busca de arquivo de contexto de projeto local — o contexto de negócio vem
@@ -76,6 +85,8 @@ product-tools/
 │   ├── refine/
 │   │   ├── SKILL.md
 │   │   └── references/formato-criticas.md
+│   ├── document-feature/
+│   │   └── SKILL.md
 │   ├── format-user-story/
 │   │   ├── SKILL.md
 │   │   └── references/

@@ -1,7 +1,7 @@
 {
   "name": "product-tools",
-  "version": "0.2.0",
-  "description": "Ferramentas de produto: pipeline de refinamento (base de conhecimento no Confluence + pesquisa de mercado + engenharia + qualidade + escrita) e formatação direta de User Stories e Bugs no padrão DoR.",
+  "version": "0.3.0",
+  "description": "Ferramentas de produto: pipeline de refinamento (base de conhecimento no Confluence + pesquisa de mercado + engenharia + qualidade + escrita), formatação direta de User Stories e Bugs no padrão DoR e documentação de funcionalidades e regras de negócio no Confluence.",
   "author": {
     "name": "Erick"
   },
