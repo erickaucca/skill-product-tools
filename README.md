@@ -8,7 +8,7 @@ de produto e a formatação direta de User Stories e Bugs no padrão DoR.
 
 | Item | Tipo | Uso |
 |---|---|---|
-| `refine` | skill | `/product-tools:refine` — pipeline completo: pesquisa de mercado → engenharia → qualidade → escrita da US |
+| `refine` | skill | `/product-tools:refine` — pipeline completo: base de conhecimento (Confluence) → pesquisa de mercado → engenharia → qualidade → escrita da US |
 | `format-user-story` | skill | `/product-tools:format-user-story` — formata uma US diretamente, sem passar pelo pipeline |
 | `format-bug` | skill | `/product-tools:format-bug` — formata um bug diretamente, no padrão DoR |
 | `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
@@ -22,8 +22,28 @@ comando.
 
 1. Abrir o Claude, aba **Cowork**
 2. Ir no diretório de plugins da organização e instalar `product-tools`
-3. Pronto — os comandos ficam disponíveis em qualquer sessão Cowork, inclusive
+3. Preencher a configuração do plugin (pedida ao ativar):
+   - `confluence_spaces` — chave(s) do(s) espaço(s) do Confluence com a base de
+     conhecimento do seu módulo, separadas por vírgula (ex: `NSSEG,NSSEGCOT`)
+   - `confluence_site` — opcional, ex: `nstech.atlassian.net`
+4. Conectar o conector **Atlassian** na conta (usado para ler o Confluence)
+5. Pronto — os comandos ficam disponíveis em qualquer sessão Cowork, inclusive
    pelo app mobile
+
+## Configuração por PO
+
+Cada PO tem sua própria configuração, guardada localmente na máquina dele. No
+início de cada sessão, um hook (`hooks/confluence-context.sh`) informa ao Claude
+o(s) espaço(s) configurado(s), e o `/refine` busca a base de conhecimento só
+neles. Para usar outro espaço numa execução pontual:
+
+```
+/product-tools:refine espaço=NSSEGSIN
+O segurado precisa acompanhar o status do sinistro pelo portal
+```
+
+Se nada estiver configurado, o `/refine` pergunta o espaço uma única vez antes
+de começar.
 
 ## Uso
 
@@ -37,18 +57,21 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
 
 ## Escopo do MVP (o que ainda não tem)
 
-- Sem MCP de Produto: a validação contra a base de regras oficiais do produto
-  ainda não existe nesta versão — está no roadmap
+- A base de conhecimento do Confluence é somente leitura: o `/refine` não cria
+  nem atualiza páginas
 - Sem MCP de ADO: leitura/escrita de cards do Azure DevOps ainda não é feita
   por este plugin
-- Sem busca de arquivo de contexto de projeto — todo contexto de negócio vem
-  da própria conversa com o PO/PM
+- Sem busca de arquivo de contexto de projeto local — o contexto de negócio vem
+  da conversa com o PO/PM e do Confluence
 
 ## Estrutura
 
 ```
 product-tools/
-├── .claude-plugin/plugin.json
+├── .claude-plugin/plugin.json      # inclui userConfig (confluence_spaces, confluence_site)
+├── hooks/
+│   ├── hooks.json                 # SessionStart → injeta a configuração do PO
+│   └── confluence-context.sh
 ├── skills/
 │   ├── refine/
 │   │   ├── SKILL.md

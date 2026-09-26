@@ -7,7 +7,7 @@
     {
       "name": "product-tools",
       "source": "./",
-      "description": "Pipeline de refinamento de produto (pesquisa de mercado, engenharia, qualidade, escrita) e formatadores de User Story e Bug no padrão DoR."
+      "description": "Pipeline de refinamento de produto (base de conhecimento no Confluence, pesquisa de mercado, engenharia, qualidade, escrita) e formatadores de User Story e Bug no padrão DoR."
     }
   ]
 }

@@ -1,8 +1,18 @@
 {
   "name": "product-tools",
-  "version": "0.1.0",
-  "description": "Ferramentas de produto: pipeline de refinamento (pesquisa de mercado + engenharia + qualidade + escrita) e formatação direta de User Stories e Bugs no padrão DoR.",
+  "version": "0.2.0",
+  "description": "Ferramentas de produto: pipeline de refinamento (base de conhecimento no Confluence + pesquisa de mercado + engenharia + qualidade + escrita) e formatação direta de User Stories e Bugs no padrão DoR.",
   "author": {
     "name": "Erick"
+  },
+  "userConfig": {
+    "confluence_spaces": {
+      "description": "Chave(s) do(s) espaço(s) do Confluence com a base de conhecimento do seu módulo, usada pelo /refine. Para mais de um espaço, separe por vírgula (ex: NSSEG,NSSEGCOT).",
+      "sensitive": false
+    },
+    "confluence_site": {
+      "description": "(Opcional) Site do Confluence, ex: nstech.atlassian.net. Deixe em branco para usar o site padrão do conector Atlassian.",
+      "sensitive": false
+    }
   }
 }
