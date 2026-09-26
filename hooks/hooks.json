@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/config-context.sh\" '${user_config.confluence_site}' '${user_config.confluence_spaces}' '${user_config.doc_space_key}' '${user_config.doc_root_folder_id}'"
+          }
+        ]
+      }
+    ]
+  }
+}

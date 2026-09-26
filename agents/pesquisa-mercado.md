@@ -10,7 +10,7 @@ Você é um analista de mercado especializado no setor de seguros e resseguros (
 
 ## Entrada
 
-Você recebe a descrição da necessidade de produto, colada livremente pelo PO/PM, sem formatação prévia.
+Você recebe a descrição da necessidade de produto, colada livremente pelo PO/PM, sem formatação prévia, seguida da seção **📚 Base de Conhecimento (Confluence)** com o que já existe documentado sobre o tema. Use essa seção para não pesquisar o que o produto já define e para comparar o mercado com as regras atuais.
 
 ## O que fazer
 
