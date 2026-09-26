@@ -1,21 +1,54 @@
 ---
 name: document-feature
-description: "Cria ou atualiza páginas de funcionalidade, regra de negócio e histórico de mudanças no Confluence (espaço nsseg) da Nstech, sempre seguindo o template fixo definido nesta skill. Use sempre que o usuário pedir para documentar uma funcionalidade, um serviço, uma regra de negócio (cotação, emissão, sinistro, resseguro, cosseguro, averbação, faturamento), ou criar/atualizar o changelog de uma página no Confluence após a entrega de uma US, mesmo que a palavra 'skill' ou 'template' não apareça explicitamente. Invocável via /document-feature."
+description: "Cria ou atualiza páginas de funcionalidade, regra de negócio e histórico de mudanças no Confluence (espaço de documentação configurado no plugin, ex: nsseg), sempre seguindo o template fixo definido nesta skill. Use sempre que o usuário pedir para documentar uma funcionalidade, um serviço, uma regra de negócio (cotação, emissão, sinistro, resseguro, cosseguro, averbação, faturamento), ou criar/atualizar o changelog de uma página no Confluence após a entrega de uma US, mesmo que a palavra 'skill' ou 'template' não apareça explicitamente. Invocável via /document-feature."
 ---
 
-# Confluence — Documentação de Regras e Funcionalidades (nsseg)
+# Confluence — Documentação de Regras e Funcionalidades
 
-Skill fonte canônica dos templates de documentação de regras de negócio e funcionalidades da Nstech no Confluence. Toda mudança de estrutura começa aqui — o Content Template do Confluence (Space Settings → Content Templates) é só um espelho estático desta skill e deve ser atualizado manualmente depois, nunca o contrário.
+Skill fonte canônica dos templates de documentação de regras de negócio e funcionalidades no Confluence. Toda mudança de estrutura começa aqui — o Content Template do Confluence (Space Settings → Content Templates) é só um espelho estático desta skill e deve ser atualizado manualmente depois, nunca o contrário.
 
-## Contexto fixo do espaço
+## Contexto do espaço (configuração do plugin)
 
-- Site: `nstech-empresa.atlassian.net` — Cloud ID: `443ab39d-4972-4aec-a2bf-2244c082ad0a`
-- Espaço `nsseg`: id `14549010`
-- Folder `Tecnologia`: id `14352407`
-- Folder `Serviços e sistemas` (dentro de Tecnologia): id `14319631`
-- Dentro de `Serviços e sistemas`, cada **domínio** (Averbação, Faturamento, Resseguro, Sinistro, Cotação, Emissão, Cosseguro...) é um **Folder** nativo do Confluence (container puro), não uma página. Se o domínio ainda não existir como Folder, ele precisa ser criado manualmente no Confluence (ferramentas de automação atuais só criam Páginas, não Folders nativos) — avise o usuário em vez de tentar criar via API.
+Site, espaço e folder de destino **não ficam fixos nesta skill** — vêm da
+configuração que o PO preencheu ao ativar o plugin. No início da sessão o
+plugin injeta um bloco no contexto iniciado por
+`[product-tools] Configuração do PO:`, com os campos abaixo (valor
+"(não configurado)" = em branco):
+
+| Campo | Uso | Exemplo |
+|---|---|---|
+| `confluence_site` | site do Confluence | `nstech-empresa.atlassian.net` |
+| `doc_space_key` | espaço de destino da documentação | `nsseg` |
+| `doc_root_folder_id` | folder que contém os folders de domínio | `14319631` ("Serviços e sistemas") |
+
+Resolva cada valor nesta ordem: (1) informado pelo PO nesta conversa → (2) bloco
+de configuração no contexto → (3) variáveis de ambiente
+`CLAUDE_PLUGIN_OPTION_CONFLUENCE_SITE`, `CLAUDE_PLUGIN_OPTION_DOC_SPACE_KEY`,
+`CLAUDE_PLUGIN_OPTION_DOC_ROOT_FOLDER_ID` (se tiver terminal) → (4) regra de
+ausência abaixo. Nunca use valores de exemplo desta skill como se fossem
+configuração.
+
+IDs técnicos são **resolvidos**, nunca pedidos ao PO nem fixados aqui:
+
+- **Cloud ID**: `getAccessibleAtlassianResources`, escolhendo o recurso cuja URL
+  corresponde a `confluence_site`. Se o site não estiver configurado e houver
+  só um recurso, use-o; se houver vários, pergunte ao PO qual site (pelo nome,
+  não pelo ID).
+- **ID do espaço**: `getConfluenceSpaces` filtrando pela chave `doc_space_key`.
+  Se a chave não estiver configurada, **pare e pergunte** em qual espaço
+  publicar — não há espaço padrão — e lembre o PO de preencher `doc_space_key`
+  na configuração do plugin.
+- **Folder raiz dos domínios**: use `doc_root_folder_id`. Se estiver em branco,
+  pergunte o **nome** do folder que agrupa os domínios (ex: "Serviços e
+  sistemas") e localize por busca (`searchConfluenceUsingCql`, ex:
+  `space = "<doc_space_key>" AND type = folder AND title = "<nome>"`); sugira ao
+  PO preencher `doc_root_folder_id` com o ID encontrado.
+
+Estrutura esperada dentro do espaço:
+
+- Dentro do folder raiz, cada **domínio** (Averbação, Faturamento, Resseguro, Sinistro, Cotação, Emissão, Cosseguro...) é um **Folder** nativo do Confluence (container puro), não uma página. Se o domínio ainda não existir como Folder, ele precisa ser criado manualmente no Confluence (ferramentas de automação atuais só criam Páginas, não Folders nativos) — avise o usuário em vez de tentar criar via API.
 - Tickets (US e Bug) ficam no **Azure DevOps**, não no Jira, mesmo estando no mesmo tenant Atlassian que o Confluence.
-- O destino da documentação é **sempre** o espaço `nsseg`, mesmo que o PO tenha configurado outros espaços no plugin (`confluence_spaces`). Essa configuração vale só para a *leitura* da base de conhecimento no `/refine`; só publique em outro espaço se o PO pedir explicitamente nesta conversa.
+- O destino da documentação é **sempre** o espaço `doc_space_key`. O campo `confluence_spaces` vale só para a *leitura* da base de conhecimento no `/refine` — nunca publique nesses espaços por causa dele; só publique fora de `doc_space_key` se o PO pedir explicitamente nesta conversa.
 
 ## Relação com as outras ferramentas do product-tools
 
@@ -28,7 +61,7 @@ Skill fonte canônica dos templates de documentação de regras de negócio e fu
 - Pedido para criar/documentar uma página de funcionalidade ou serviço
 - Pedido para criar/atualizar uma regra de negócio (macro, cross-sistema)
 - Pedido para registrar uma mudança no histórico de uma funcionalidade após uma US ser entregue
-- Pedido para "equalizar"/padronizar páginas existentes no espaço nsseg com o template
+- Pedido para "equalizar"/padronizar páginas existentes no espaço de documentação com o template
 
 ## Os três tipos de página (nunca misturar)
 
@@ -102,12 +135,13 @@ Para página de regra de negócio, colete todos os campos da tabela de Page Prop
 ## Fluxo de trabalho — publicação no Confluence
 
 1. Carregue as ferramentas do Atlassian Rovo se ainda não estiverem carregadas (`ToolSearch` por "Confluence")
-2. Confirme o domínio (Folder) de destino — localize com `searchConfluenceUsingCql` (ex: `space = "nsseg" AND title ~ "<nome do domínio>"`); nunca peça o ID técnico ao usuário, resolva por busca. Se o Folder não existir, avise que precisa ser criado manualmente antes (automação não cria Folders nativos)
-3. Antes de criar uma página nova num domínio que já tem outras páginas de funcionalidade, busque uma existente (`searchConfluenceUsingCql` + `getConfluencePage`) e use como referência de fidelidade ao template — a estrutura deve ficar consistente entre funcionalidades do mesmo domínio
-4. Crie a página de funcionalidade com `createConfluencePage` (`contentFormat: "html"`), `parentId` do Folder do domínio
-5. Logo em seguida, crie a página filha "Histórico de mudanças — <nome da funcionalidade>" com `parentId` da página de funcionalidade recém-criada, já com a tabela de changelog (vazia ou com a primeira linha, se houver)
-6. No rodapé da página de funcionalidade, garanta o link para a página de Histórico criada
-7. Devolva o link de cada página criada (`_links.webui` + base URL do site) e um resumo de 1-2 linhas — não repita o conteúdo inteiro no chat
+2. Resolva site, Cloud ID, espaço e folder raiz conforme "Contexto do espaço" acima
+3. Confirme o domínio (Folder) de destino dentro do folder raiz — localize com `searchConfluenceUsingCql` (ex: `space = "<doc_space_key>" AND type = folder AND title ~ "<nome do domínio>"`); nunca peça o ID técnico ao usuário, resolva por busca. Se o Folder não existir, avise que precisa ser criado manualmente antes (automação não cria Folders nativos)
+4. Antes de criar uma página nova num domínio que já tem outras páginas de funcionalidade, busque uma existente (`searchConfluenceUsingCql` + `getConfluencePage`) e use como referência de fidelidade ao template — a estrutura deve ficar consistente entre funcionalidades do mesmo domínio
+5. Crie a página de funcionalidade com `createConfluencePage` (`contentFormat: "html"`), `parentId` do Folder do domínio
+6. Logo em seguida, crie a página filha "Histórico de mudanças — <nome da funcionalidade>" com `parentId` da página de funcionalidade recém-criada, já com a tabela de changelog (vazia ou com a primeira linha, se houver)
+7. No rodapé da página de funcionalidade, garanta o link para a página de Histórico criada
+8. Devolva o link de cada página criada (`_links.webui` + base URL do site) e um resumo de 1-2 linhas — não repita o conteúdo inteiro no chat
 
 Para página de regra de negócio, mesmo fluxo, mas o `parentId` é o Folder do domínio diretamente (ou a página de regras gerais do domínio, se o usuário preferir agrupar) e o Page Properties block vai no topo via macro nativa do Confluence.
 

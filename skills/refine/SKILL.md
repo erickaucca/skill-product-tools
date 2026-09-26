@@ -43,14 +43,15 @@ da necessidade (regras de negócio, funcionalidades, glossário, decisões).
 
 Cada PO configura o(s) seu(s) espaço(s) ao ativar o plugin (campo
 `confluence_spaces`, e opcionalmente `confluence_site`). No início da sessão o
-plugin injeta essa configuração no contexto com uma linha iniciada por
+plugin injeta essa configuração no contexto, num bloco de linhas iniciado por
 `[product-tools] Configuração do PO:`. Resolva o espaço nesta ordem:
 
 1. Espaço informado explicitamente pelo PO na própria mensagem
    (ex: `/refine espaço=NSSEGSIN ...`) — vale só para esta execução.
-2. Espaço(s) da linha `[product-tools] Configuração do PO:` no contexto.
+2. Valor de `confluence_spaces` no bloco `[product-tools] Configuração do PO:`
+   do contexto (ignore se estiver "(não configurado)").
 3. Variável de ambiente `CLAUDE_PLUGIN_OPTION_CONFLUENCE_SPACES`, se você tiver
-   acesso a um terminal e a linha acima não estiver no contexto.
+   acesso a um terminal e o bloco acima não estiver no contexto.
 4. Se nada disso existir: esta é a **única** pergunta permitida antes de iniciar.
    Pergunte uma vez qual espaço do Confluence usar e lembre o PO de preencher a
    configuração do plugin (`confluence_spaces`) para não precisar informar de
