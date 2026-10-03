@@ -1,0 +1,18 @@
+[
+  {
+    "query": "o suporte relatou que a emissão retorna erro 500 quando a apólice tem endosso ativo, registra esse bug",
+    "should_trigger": true
+  },
+  {
+    "query": "deveria mostrar o prêmio total mas mostra zero, formata isso como bug para o backlog",
+    "should_trigger": true
+  },
+  {
+    "query": "esse teste unitário está falhando com NullPointerException, depura pra mim",
+    "should_trigger": false
+  },
+  {
+    "query": "o botão não faz nada depois que adicionei o handler, o que errei no meu código?",
+    "should_trigger": false
+  }
+]

@@ -1,26 +1,50 @@
 {
   "name": "product-tools",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Ferramentas de produto: pipeline de refinamento (base de conhecimento no Confluence + pesquisa de mercado + engenharia + qualidade + escrita), formatação direta de User Stories e Bugs no padrão DoR e documentação de funcionalidades e regras de negócio no Confluence.",
   "author": {
     "name": "Erick"
   },
   "userConfig": {
     "confluence_site": {
+      "type": "string",
+      "title": "Site do Confluence",
       "description": "Site do Confluence usado pelo plugin (leitura no /refine e publicação no /document-feature), ex: nstech-empresa.atlassian.net. Em branco = primeiro site disponível no conector Atlassian.",
+      "required": false,
       "sensitive": false
     },
     "confluence_spaces": {
+      "type": "string",
+      "title": "Espaço(s) da base de conhecimento",
       "description": "Chave(s) do(s) espaço(s) do Confluence com a base de conhecimento do seu módulo, lida pelo /refine. Para mais de um espaço, separe por vírgula (ex: NSSEG,NSSEGCOT).",
+      "required": false,
       "sensitive": false
     },
     "doc_space_key": {
+      "type": "string",
+      "title": "Espaço de documentação",
       "description": "Chave do espaço do Confluence onde o /document-feature publica páginas de funcionalidade, regra de negócio e histórico (ex: nsseg).",
+      "required": false,
       "sensitive": false
     },
     "doc_root_folder_id": {
+      "type": "string",
+      "title": "Folder raiz dos domínios",
       "description": "ID do folder que contém os folders de domínio (Cotação, Emissão, Sinistro...) no espaço de documentação (ex: 14319631, o folder 'Serviços e sistemas'). Pegue na URL do folder no Confluence. Em branco = o /document-feature pergunta o nome do folder e localiza por busca.",
+      "required": false,
       "sensitive": false
     }
-  }
+  },
+  "homepage": "https://github.com/erickaucca/skill-product-tools",
+  "repository": "https://github.com/erickaucca/skill-product-tools",
+  "keywords": [
+    "produto",
+    "seguros",
+    "refinamento",
+    "user-story",
+    "bug",
+    "dor",
+    "confluence",
+    "documentacao"
+  ]
 }

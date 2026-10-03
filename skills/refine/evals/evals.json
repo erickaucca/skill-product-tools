@@ -1,0 +1,42 @@
+{
+  "skill_name": "refine",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/refine O segurado precisa acompanhar o status do sinistro pelo portal",
+      "expected_output": "Executa a etapa 0 (base de conhecimento), depois pesquisa de mercado, engenharia e qualidade em ordem; para na primeira etapa com contem_criticas OU entrega a US via format-user-story.",
+      "expectations": [
+        "Delega a leitura do Confluence ao agente base-conhecimento antes da pesquisa de mercado",
+        "Cada etapa 1-3 devolve apenas a própria seção, que o orquestrador anexa sem reescrever seções anteriores",
+        "Se alguma etapa retornar contem_criticas, o pipeline para e entrega o relatório sem gerar a US",
+        "Nunca cria ou edita páginas no Confluence"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/refine",
+      "expected_output": "Pede ao PO que cole a descrição da necessidade e aguarda, sem perguntar ID ou título.",
+      "expectations": [
+        "Pede apenas a descrição da necessidade",
+        "Não pergunta ID, título nem campos extras"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "(resposta do PO após um relatório de críticas de Engenharia) Se a parcela falhar, o pedido fica pendente e entra na régua de cobrança.",
+      "expected_output": "Retoma a partir da etapa de Engenharia com a resposta incorporada, sem reiniciar do zero.",
+      "expectations": [
+        "Não repete a Pesquisa de Mercado nem a Base de Conhecimento",
+        "Re-delega somente a etapa Engenharia com a resposta do PO"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/refine espaço=NSSEGSIN Cosseguro: líder precisa ver o aceite dos cosseguradores antes da emissão",
+      "expected_output": "Usa o espaço NSSEGSIN informado na mensagem, em vez do configurado.",
+      "expectations": [
+        "A busca no Confluence é restrita ao espaço NSSEGSIN"
+      ]
+    }
+  ]
+}

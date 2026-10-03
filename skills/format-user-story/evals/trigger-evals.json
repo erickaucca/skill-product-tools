@@ -1,0 +1,22 @@
+[
+  {
+    "query": "escreve uma user story para o fluxo de endosso de apólice no portal do corretor",
+    "should_trigger": true
+  },
+  {
+    "query": "preciso formatar essa necessidade em US no padrão DoR: segurado quer ver o status do sinistro",
+    "should_trigger": true
+  },
+  {
+    "query": "implementa o endpoint POST /cotacoes no repositório e adiciona os testes",
+    "should_trigger": false
+  },
+  {
+    "query": "adiciona um botão de exportar CSV nessa tela React",
+    "should_trigger": false
+  },
+  {
+    "query": "corrige o bug do cálculo de franquia no serviço de sinistro",
+    "should_trigger": false
+  }
+]

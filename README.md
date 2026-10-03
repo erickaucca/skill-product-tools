@@ -12,12 +12,12 @@ de produto e a formatação direta de User Stories e Bugs no padrão DoR.
 | `format-user-story` | skill | `/product-tools:format-user-story` — formata uma US diretamente, sem passar pelo pipeline |
 | `format-bug` | skill | `/product-tools:format-bug` — formata um bug diretamente, no padrão DoR |
 | `document-feature` | skill | `/product-tools:document-feature` — cria/atualiza no Confluence (espaço de documentação configurado) páginas de funcionalidade, regra de negócio e histórico de mudanças, no template padrão |
-| `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
+| `base-conhecimento`, `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
 
-Todas as skills também disparam automaticamente pelo contexto da conversa
-(ex: descrever uma necessidade sem digitar `/refine` já pode acionar
-`format-user-story`), além de poderem ser chamadas de forma explícita pelo
-comando.
+`refine` e `document-feature` só rodam quando você os chama (`disable-model-invocation`),
+porque têm custo alto ou escrevem no Confluence. `format-user-story` e
+`format-bug` também disparam pelo contexto da conversa (ex: pedir "escreve uma
+US para..."), mas não em pedidos de código ou depuração.
 
 ## Instalação (time de produto, sem CLI)
 
@@ -30,7 +30,9 @@ comando.
    - `doc_space_key` — espaço onde o `/document-feature` publica, ex: `nsseg`
    - `doc_root_folder_id` — opcional, ID do folder que agrupa os domínios
      (ex: `14319631`, "Serviços e sistemas"); pegue na URL do folder
-4. Conectar o conector **Atlassian** na conta (usado para ler o Confluence)
+4. Conectar o conector **Atlassian** na conta (usado para ler e, no
+   `/document-feature`, escrever no Confluence). O plugin não embute um MCP
+   próprio, para não duplicar o login do conector que você já usa
 5. Pronto — os comandos ficam disponíveis em qualquer sessão Cowork, inclusive
    pelo app mobile
 
@@ -68,6 +70,14 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
    no espaço de documentação e registra a US no histórico de mudanças. A próxima execução do
    `/refine` já encontra a regra atualizada.
 
+## Desenvolvimento
+
+- `python3 scripts/validate.py` — validação estática (manifestos, frontmatter,
+  agentes, hooks, referências); roda também no CI (`.github/workflows/validate.yml`)
+- `skills/*/evals/` — casos de teste para `skill-creator` (`evals.json`) e de
+  gatilho (`trigger-evals.json`)
+- Veja `CLAUDE.md` (convenções) e `CHANGELOG.md`
+
 ## Escopo do MVP (o que ainda não tem)
 
 - O `/refine` só lê o Confluence; escrita é feita apenas pelo `document-feature`,
@@ -81,24 +91,24 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
 
 ```
 product-tools/
-├── .claude-plugin/plugin.json      # userConfig: confluence_site, confluence_spaces, doc_space_key, doc_root_folder_id
+├── .claude-plugin/
+│   ├── plugin.json                # userConfig: confluence_site, confluence_spaces, doc_space_key, doc_root_folder_id
+│   └── marketplace.json
 ├── hooks/
 │   ├── hooks.json                 # SessionStart → injeta a configuração do PO
 │   └── config-context.sh
 ├── skills/
-│   ├── refine/
-│   │   ├── SKILL.md
-│   │   └── references/formato-criticas.md
-│   ├── document-feature/
-│   │   └── SKILL.md
-│   ├── format-user-story/
-│   │   ├── SKILL.md
-│   │   └── references/
-│   └── format-bug/
-│       ├── SKILL.md
-│       └── references/
-└── agents/
-    ├── pesquisa-mercado.md
-    ├── engenharia.md
-    └── qualidade.md
+│   ├── refine/                    # SKILL.md, references/formato-criticas.md, evals/
+│   ├── document-feature/          # SKILL.md, evals/
+│   ├── format-user-story/         # SKILL.md, references/, evals/
+│   └── format-bug/                # SKILL.md, references/, evals/
+├── agents/
+│   ├── base-conhecimento.md
+│   ├── pesquisa-mercado.md
+│   ├── engenharia.md
+│   └── qualidade.md
+├── scripts/validate.py
+├── .github/workflows/validate.yml
+├── CHANGELOG.md
+└── CLAUDE.md
 ```

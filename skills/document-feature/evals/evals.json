@@ -1,0 +1,24 @@
+{
+  "skill_name": "document-feature",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/document-feature Documentar a funcionalidade 'Averbação de embarque' do domínio Averbação",
+      "expected_output": "Faz o intake (até 3-4 perguntas), mostra prévia e só publica após confirmação.",
+      "expectations": [
+        "Não inventa regras, cenários ou exemplos",
+        "Mostra prévia e pede confirmação explícita antes de createConfluencePage",
+        "Cria a página filha de Histórico de mudanças",
+        "Publica apenas no espaço doc_space_key"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/document-feature Registrar no histórico a correção do bug BUG-091",
+      "expected_output": "Recusa registrar: bug não entra no histórico.",
+      "expectations": [
+        "Explica que bugs nunca entram no Histórico de mudanças"
+      ]
+    }
+  ]
+}

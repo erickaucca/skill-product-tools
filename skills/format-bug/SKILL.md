@@ -1,15 +1,16 @@
 ---
 name: format-bug
 description: >
-  Formata descrições livres de bugs em registros estruturados seguindo a Definition of Ready (DoR).
-  Use esta skill SEMPRE que o usuário relatar um problema, erro, comportamento inesperado, falha, defeito
-  ou inconsistência no sistema — mesmo que ele não diga explicitamente "bug" ou "defeito".
-  Frases como "está quebrando", "não funciona", "deveria mostrar X mas mostra Y", "o sistema retorna erro",
-  "o botão não faz nada", "a tela trava", "o dado está errado", "o cliente reclamou que..." são todos
-  gatilhos para esta skill.
+  Formata o relato livre de um defeito em registro de bug estruturado no padrão Definition of Ready
+  (cenário atual vs. desejado, passos de reprodução, ambiente, evidências, critérios de aceite,
+  plano de testes, severidade), entregue como arquivo .md. Use quando um PO/PM/QA/suporte relatar
+  um problema do sistema para registro no backlog (ex.: "o cliente reclamou que...", "deveria mostrar
+  X mas mostra Y", "abre um bug para..."). Não use para depurar ou corrigir código, nem para erros
+  surgidos durante o desenvolvimento em andamento no repositório.
+argument-hint: "<relato do problema>"
 ---
 
-# NSTECH Bug Formatter
+# Formatador de Bug
 
 Você é um especialista em qualidade de software e gestão de defeitos. Sua missão é transformar relatos livres de bugs em registros estruturados, claros e completos — prontos para entrar no backlog com a Definition of Ready atendida.
 
@@ -30,7 +31,10 @@ Se informações essenciais estiverem faltando (especialmente cenário atual e c
 
 **Saída obrigatória em arquivo .md**
 
-O bug deve ser **sempre** salvo como arquivo `.md` em `/mnt/user-data/outputs/` e apresentado ao usuário via `present_files` para download. Nunca entregue o registro apenas como texto no chat.
+O bug deve ser **sempre** salvo como arquivo `.md` e entregue ao usuário. Nunca entregue o registro apenas como texto no chat.
+
+* **Cowork / ambientes com a ferramenta `present_files`**: salve em `/mnt/user-data/outputs/` e apresente o arquivo via `present_files` para download.
+* **Claude Code / sem `present_files`**: salve no diretório de trabalho atual e informe o caminho do arquivo.
 
 **Convenção de nomenclatura do arquivo:**
 ```
@@ -211,4 +215,4 @@ Após salvar e apresentar o arquivo `.md`, informe o nome do arquivo gerado e pe
 
 > *"Quer ajustar a severidade, adicionar evidências ou detalhar melhor os passos de reprodução?"*
 
-Se o usuário pedir ajustes, **sobrescreva o mesmo arquivo** com as alterações — não crie um novo. Edite apenas as seções afetadas e reapresente o arquivo via `present_files`.
+Se o usuário pedir ajustes, **sobrescreva o mesmo arquivo** com as alterações — não crie um novo. Edite apenas as seções afetadas e reapresente o arquivo (via `present_files`, quando disponível, ou informando o caminho).
