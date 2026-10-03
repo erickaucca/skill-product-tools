@@ -36,6 +36,28 @@ US para..."), mas não em pedidos de código ou depuração.
 5. Pronto — os comandos ficam disponíveis em qualquer sessão Cowork, inclusive
    pelo app mobile
 
+## Receber atualizações
+
+**Claude Code** (instalação por marketplace):
+
+```
+/plugin marketplace update erick-product-tools
+/plugin update product-tools@erick-product-tools
+```
+
+Depois, reinicie a sessão. Para receber sem comando manual, ative o
+auto-update em `/plugin` → Marketplaces (em marketplaces de terceiros costuma
+vir desligado). A configuração do PO (`userConfig`) é preservada; se uma versão
+nova pedir campos novos, só eles são solicitados.
+
+**Cowork** (plugin instalado pelo diretório da organização): a atualização
+depende da sincronização do marketplace feita pelo admin do workspace — o
+usuário final normalmente não executa comando. Confirme com o admin como e com
+que frequência a sincronização ocorre.
+
+Se o repositório for privado, cada usuário precisa de acesso ao GitHub (login
+do `git` ou `GITHUB_TOKEN`), senão a atualização falha.
+
 ## Configuração por PO
 
 Cada PO tem sua própria configuração, guardada localmente na máquina dele. No
@@ -76,7 +98,7 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
   agentes, hooks, referências); roda também no CI (`.github/workflows/validate.yml`)
 - `skills/*/evals/` — casos de teste para `skill-creator` (`evals.json`) e de
   gatilho (`trigger-evals.json`)
-- Veja `CLAUDE.md` (convenções) e `CHANGELOG.md`
+- Veja `CLAUDE.md` (convenções e checklist de release) e `CHANGELOG.md`
 
 ## Escopo do MVP (o que ainda não tem)
 
