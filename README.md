@@ -67,7 +67,7 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
 1. `/product-tools:refine` — lê a base de conhecimento (Confluence), refina e gera a US
 2. Time desenvolve e entrega a US (Azure DevOps)
 3. `/product-tools:rule-update` — atualiza as regras da funcionalidade (Gherkin)
-   na hierarquia plataforma / domínio / funcionalidade e registra a US no histórico de mudanças. A próxima execução do
+   na hierarquia plataforma / domínio / funcionalidade e registra a US na página filha de histórico (a página da funcionalidade guarda só a versão vigente). A próxima execução do
    `/refine` já encontra a regra atualizada.
 
 ## Escopo do MVP (o que ainda não tem)

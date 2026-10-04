@@ -44,10 +44,6 @@ Funcionalidade: <funcionalidade>
 ## Pontos em aberto
 - A DEFINIR: <lacuna>, <quem decide>
 
-## Histórico de mudanças
-| Data | Fonte | Regras | O que mudou |
-|---|---|---|---|
-| DD/MM/AAAA | US-1234 | RN-03 (nova), RN-01 (alterada) | resumo curto |
 ````
 
 ## Regras de escrita
@@ -60,4 +56,33 @@ Funcionalidade: <funcionalidade>
 - **IDs `RN-xx` são estáveis**: nunca renumere, reaproveite ou reordene. Regra nova recebe o próximo número livre. Regra descontinuada mantém o ID com status `Descontinuada`
 - Cada regra registra a **fonte**; ao incrementar uma regra existente, some a nova fonte (`US-1234, US-1301`)
 - `Status` reflete o que o usuário informou. Na dúvida entre "em produção" e "em desenvolvimento", pergunte. US é intenção, o documento diz o que é verdade
-- **Histórico de mudanças**: uma linha por execução com mudanças, só depois do "ok" do Portão 3. Bugs nunca entram
+- A página da funcionalidade **não tem seção de histórico**. Ela mostra só a versão vigente das regras
+- **Última atualização** e **Fontes** refletem a versão vigente e são atualizadas a cada execução
+
+## Página de histórico (filha da página da funcionalidade)
+
+Título: `Histórico de mudanças` (no Confluence, se o título já existir em outro caminho do espaço, `Histórico de mudanças — <Funcionalidade>`; ver `references/confluence.md`).
+
+Conteúdo: uma descrição de uma linha e as entradas, **mais recente no topo**, uma por execução com mudanças. Só entra depois do "ok" do Portão 3 e da gravação das regras. Nunca reescreva nem apague entradas antigas, só some novas. Bugs nunca entram.
+
+````markdown
+Registro das atualizações das regras de **NSRE / Resseguro / Relatório**. A versão vigente está na página da funcionalidade.
+
+## DD/MM/AAAA — US-1234
+**Fonte:** US-1234 (título da US)
+**Regras:** RN-03 (nova), RN-01 (alterada), RN-02 (descontinuada)
+
+- **RN-03 — <título>** (nova): resumo de uma linha
+- **RN-01 — <título>** (alterada): o que mudou, em uma linha
+  - Antes: <condição ou resultado anterior, resumido>
+  - Depois: <condição ou resultado novo, resumido>
+
+## DD/MM/AAAA — criação inicial
+**Fonte:** US-1100
+**Regras:** RN-01 a RN-08 (novas)
+````
+
+- Regra **alterada** sempre traz `Antes` e `Depois`, porque a página da funcionalidade só guarda a versão vigente
+- Regra nova ou descontinuada: uma linha basta
+- Linke a US ao work item do Azure DevOps quando o usuário informar o link
+- Primeira execução de uma funcionalidade nova: uma entrada `criação inicial`

@@ -36,8 +36,8 @@ Se houver mais de uma página candidata no mesmo nível, liste as candidatas e p
 Leia a página da funcionalidade e responda **com o conteúdo em Markdown direto no chat** (não dentro de bloco de código, para os blocos `gherkin` renderizarem), nesta ordem:
 
 1. Uma linha: `Encontrado: NSRE / Resseguro / Relatório` + link da página
-2. O documento: cabeçalho (`plataforma`, `domínio`, `funcionalidade`), descrição, regras `RN-xx` com seus cenários Gherkin, referências a outras funcionalidades e pontos em aberto, exatamente como estão na página
-3. Histórico de mudanças: omita por padrão e diga em uma linha que existe; mostre só se o usuário pedir
+2. O documento: cabeçalho (`plataforma`, `domínio`, `funcionalidade`), descrição, regras `RN-xx` com seus cenários Gherkin, referências a outras funcionalidades e pontos em aberto, exatamente como estão na página (o histórico não faz parte dela)
+3. Histórico: fica na **página filha** `Histórico de mudanças`, não na página da funcionalidade. Não leia nem mostre por padrão; diga em uma linha que existe e mostre só se o usuário pedir (nesse caso leia a página filha e reproduza as entradas, mais recente primeiro)
 
 Com `filtro`:
 - **ID** (`RN-03`): mostre só essa regra, mais a linha do cabeçalho

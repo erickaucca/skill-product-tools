@@ -33,13 +33,15 @@ Estrutura esperada sob a raiz, um nível por campo do cabeçalho:
 
 ```
 <raiz>
-└── NSRE                 (plataforma)
-    └── Resseguro        (domínio)
-        └── Relatório    (funcionalidade, onde ficam as regras)
+└── NSRE                         (plataforma)
+    └── Resseguro                (domínio)
+        └── Relatório            (funcionalidade: só a versão vigente das regras)
+            └── Histórico        (página filha: controle das atualizações)
 ```
 
-- **Combinação existe** (os três níveis já estão sob a raiz): a página da funcionalidade é **atualizada**
-- **Combinação não existe** (falta algum nível): os níveis que faltam são **criados** sob a raiz, e a página da funcionalidade é criada com o documento
+- **Combinação existe** (os três níveis já estão sob a raiz): a página da funcionalidade é **atualizada** e uma entrada é somada à página de histórico
+- **Combinação não existe** (falta algum nível): os níveis que faltam são **criados** sob a raiz, junto com a página da funcionalidade (com o documento) e sua página filha de histórico
+- A página da funcionalidade **nunca** contém histórico. Todo o controle de atualizações fica na página filha de histórico, para a leitura das regras não ficar poluída
 - Se você passar direto o link da página da funcionalidade, ela é o destino e a busca na raiz é dispensada
 
 Procure os quatro itens (plataforma, domínio, funcionalidade, raiz) na instrução e no contexto. Só conta o que o usuário disse explicitamente. **Nunca deduza** do conteúdo do material.
@@ -59,7 +61,7 @@ Dispare as leituras na mesma rodada de chamadas, sem esperar uma pela outra.
 
 Leia **tudo**: descrição, regras explícitas, critérios de aceite, exemplos, exceções, mensagens de erro, campos, limites, perfis. Anote a fonte de cada regra (`US-1234`, `chat`, `texto colado`). Bug (`/format-bug`) não é fonte de regra nova; se vier, pergunte se revela regra nunca documentada.
 
-**Localização**: procure a combinação plataforma / domínio / funcionalidade **descendo a hierarquia a partir da raiz**, um nível por vez (nunca por título solto no espaço inteiro). Compare nomes ignorando maiúsculas e acentos (`Relatorio` = `Relatório`). Se a página da funcionalidade existe, leia-a inteira. Confluence → `references/confluence.md`. Notion → `references/notion.md` (leia só o do destino escolhido; carregue as ferramentas com `ToolSearch` se preciso). Regras existentes são a **base**; preserve IDs, redação e ordem. Diga ao usuário qual caso é: combinação existente (atualizar) ou inexistente, com quais níveis faltam (criar).
+**Localização**: procure a combinação plataforma / domínio / funcionalidade **descendo a hierarquia a partir da raiz**, um nível por vez (nunca por título solto no espaço inteiro). Compare nomes ignorando maiúsculas e acentos (`Relatorio` = `Relatório`). Se a página da funcionalidade existe, leia-a inteira e confira se tem a página filha de histórico (leia só o título, o conteúdo dela não é necessário para consolidar). Se a página da funcionalidade tiver uma seção de histórico antiga no corpo, **não apague**: pergunte na rodada de perguntas se deve migrá-la para a página de histórico. Confluence → `references/confluence.md`. Notion → `references/notion.md` (leia só o do destino escolhido; carregue as ferramentas com `ToolSearch` se preciso). Regras existentes são a **base**; preserve IDs, redação e ordem. Diga ao usuário qual caso é: combinação existente (atualizar) ou inexistente, com quais níveis faltam (criar).
 
 ## 3. Análise e rodada única de perguntas
 
@@ -85,6 +87,7 @@ Mostre um resumo curto, nunca o documento inteiro:
 - contagem de regras novas, alteradas, mantidas e `A DEFINIR`
 - lista das novas e alteradas (ID + título + uma linha)
 - **estrutura**: o que será atualizado ou criado, no formato `NSRE / Resseguro / Relatório → criar domínio e funcionalidade` ou `→ atualizar`
+- **histórico**: a entrada que será somada à página de histórico (ou a criação da página, se não existir)
 - decisões tomadas na rodada de perguntas
 
 Peça confirmação. Só grave no destino após o "ok".
@@ -93,7 +96,8 @@ Peça confirmação. Só grave no destino após o "ok".
 
 1. Gere o `.md` conforme `references/template-documento.md` (leia agora) e informe o caminho. Pode ser feito antes do "ok", para o PO revisar
 2. Após o "ok", grave seguindo a seção "Gravação" do arquivo de referência do destino: crie na ordem plataforma → domínio → funcionalidade só os níveis que faltam (cada um com o `parentId` do nível acima), ou atualize a página da funcionalidade com a versão **completa** (nunca conteúdo parcial). Páginas de plataforma e domínio já existentes **não são alteradas**
-3. Devolva o link da página da funcionalidade, a lista de níveis criados (se houver) e o caminho do `.md`, com resumo de 1-2 linhas. Não repita o documento no chat
+3. **Histórico**, sempre depois de a página da funcionalidade ser gravada com sucesso: página nova → crie a filha de histórico com a primeira entrada; página existente → some a nova entrada **no topo** da página de histórico (se a filha não existir, crie). Formato da entrada em `references/template-documento.md`. Se a gravação das regras falhar, não registre histórico. Se só o histórico falhar, avise e ofereça tentar de novo
+4. Devolva o link da página da funcionalidade e da página de histórico, a lista de níveis criados (se houver) e o caminho do `.md`, com resumo de 1-2 linhas. Não repita o documento no chat
 
 ## Princípios
 
@@ -102,5 +106,6 @@ Peça confirmação. Só grave no destino após o "ok".
 - Nunca inventar regra, valor, ID, dono, status ou cenário
 - Nunca apagar nem renumerar regra existente sem confirmação
 - Conflito entre fontes é decisão do usuário
+- A página da funcionalidade guarda só a versão vigente; o histórico vive só na página filha
 - Combinação existente = atualizar; inexistente = criar só os níveis que faltam. Nunca mover, renomear nem apagar páginas
 - Nunca editar outra funcionalidade sem pedido e sem o passo 1 para ela

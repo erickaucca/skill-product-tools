@@ -73,7 +73,7 @@ Use o conector Atlassian (Rovo):
 4. Leia (`getConfluencePage`) as páginas mais relevantes — no máximo 5.
    Priorize páginas no padrão da skill `rule-update`: páginas de funcionalidade
    na hierarquia plataforma / domínio / funcionalidade, com regras `RN-xx` em
-   Gherkin. Ignore a seção "Histórico de mudanças", exceto para entender uma
+   Gherkin. Ignore a página filha "Histórico de mudanças", exceto para entender uma
    mudança recente.
 
 ### O que anexar ao documento de trabalho
