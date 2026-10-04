@@ -12,6 +12,7 @@ de produto e a formatação direta de User Stories e Bugs no padrão DoR.
 | `format-user-story` | skill | `/product-tools:format-user-story` — formata uma US diretamente, sem passar pelo pipeline |
 | `format-bug` | skill | `/product-tools:format-bug` — formata um bug diretamente, no padrão DoR |
 | `rule-update` | skill | `/product-tools:rule-update` — lê material do chat, US do Azure e texto colado e consolida as regras de negócio num `.md` em Gherkin, atualizando a página no Confluence ou Notion, na estrutura `plataforma / domínio / funcionalidade` sob uma raiz informada (cria os níveis que faltam, atualiza se existir). Exige os três campos no cabeçalho |
+| `rule-search` | skill | `/product-tools:rule-search` — consulta somente leitura: localiza as regras de uma funcionalidade (`plataforma / domínio / funcionalidade` sob uma raiz) e mostra em Markdown no chat; se não achar, diz onde parou para você ajustar |
 | `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
 
 Todas as skills também disparam automaticamente pelo contexto da conversa
@@ -90,6 +91,8 @@ product-tools/
 │   ├── refine/
 │   │   ├── SKILL.md
 │   │   └── references/formato-criticas.md
+│   ├── rule-search/
+│   │   └── SKILL.md
 │   ├── rule-update/
 │   │   ├── SKILL.md
 │   │   └── references/ (confluence.md, notion.md, template-documento.md)
