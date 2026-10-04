@@ -1,0 +1,35 @@
+{
+  "skill_name": "rule-search",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/rule-search plataforma: NSRE, domínio: resseguro, funcionalidade: relatorio, raiz: <link da página Produto no Notion>",
+      "expected_output": "Localiza a página e mostra as regras em Markdown no chat, sem alterar nada.",
+      "expectations": [
+        "Desce a hierarquia a partir da raiz e mostra a linha Encontrado com o link",
+        "Reproduz as regras RN-xx com os cenários Gherkin como estão na página, sem resumir",
+        "Não mostra o histórico por padrão, só avisa que existe",
+        "Não cria nem altera nenhuma página"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/rule-search plataforma: NSRE, domínio: resseguro, funcionalidade: conciliacao, raiz: <link da página Produto no Notion>",
+      "expected_output": "Informa que não localizou, em qual nível parou e o que existe nesse nível.",
+      "expectations": [
+        "Diz que não localizou e em qual nível parou",
+        "Lista as páginas existentes no nível onde parou para o usuário ajustar",
+        "Não inventa regras nem usa conhecimento geral",
+        "Não cria páginas nem sugere que foram criadas, apenas aponta /rule-update para criar"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/rule-search domínio: resseguro, funcionalidade: relatorio",
+      "expected_output": "Pergunta o que falta antes de buscar.",
+      "expectations": [
+        "Pede plataforma e raiz em uma única pergunta, sem buscar nada"
+      ]
+    }
+  ]
+}

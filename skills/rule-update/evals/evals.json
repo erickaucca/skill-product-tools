@@ -1,0 +1,59 @@
+{
+  "skill_name": "rule-update",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "/rule-update domínio: resseguro, funcionalidade: relatorio. Segue a US para documentar: <texto da US colado>",
+      "expected_output": "Para antes de qualquer análise e pergunta o que falta: plataforma e raiz.",
+      "expectations": [
+        "Não lê o material nem analisa antes de ter plataforma, domínio, funcionalidade e raiz",
+        "Faz uma única pergunta listando apenas o que falta",
+        "Não deduz a plataforma a partir do conteúdo da US"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "/rule-update plataforma: NSRE, domínio: resseguro, funcionalidade: relatorio, raiz: <link da página Produto no Notion>. US: ... (cita a US-45853 como dependência)",
+      "expected_output": "Desce a hierarquia a partir da raiz, pergunta sobre as referências a outras funcionalidades antes de alterar e só grava após confirmação do diff.",
+      "expectations": [
+        "Localiza a combinação descendo a hierarquia a partir da raiz, sem busca solta por título",
+        "Pergunta como tratar a US-45853 (referenciar, trazer regra local, atualizar junto ou ignorar) antes de qualquer alteração",
+        "Reúne referências, conflitos e lacunas em uma única rodada de perguntas",
+        "Mostra resumo do diff e pede confirmação explícita antes de gravar no destino",
+        "Não edita nenhuma outra funcionalidade por conta própria"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "/rule-update (combinação inexistente) plataforma: NSRE, domínio: cosseguro, funcionalidade: rateio, raiz: <página raiz>. Material com regras novas.",
+      "expected_output": "Cria só os níveis que faltam, a página da funcionalidade com as regras em Gherkin e a filha de histórico.",
+      "expectations": [
+        "Cria somente os níveis que faltam, na ordem plataforma, domínio, funcionalidade",
+        "Cada regra tem ID RN-xx estável, fonte e cenários em Gherkin em português",
+        "Cria a página filha Histórico de mudanças com a entrada de criação inicial",
+        "A página da funcionalidade não contém seção de histórico",
+        "Marca lacunas como A DEFINIR em vez de inventar valores"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "/rule-update (combinação existente, com RN-01 a RN-05) nova US altera a RN-02 e adiciona uma regra nova",
+      "expected_output": "Atualiza a página da funcionalidade preservando as regras existentes e soma entrada no topo do histórico com Antes e Depois.",
+      "expectations": [
+        "Preserva IDs, redação e ordem das regras existentes e dá à nova regra o próximo ID livre",
+        "Não renumera nem apaga regras sem confirmação",
+        "Soma a entrada no topo da página de histórico sem alterar entradas antigas",
+        "A entrada da regra alterada traz Antes e Depois",
+        "Se a nova US conflitar com uma regra existente, pergunta qual vale em vez de decidir sozinho"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "/rule-update ... registrar no histórico a correção do bug BUG-091",
+      "expected_output": "Não registra: bug não é mudança de regra.",
+      "expectations": [
+        "Explica que bug não entra no histórico nem vira regra, exceto se revelar regra nunca documentada, e pergunta nesse caso"
+      ]
+    }
+  ]
+}

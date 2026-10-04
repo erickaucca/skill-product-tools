@@ -1,26 +1,52 @@
 {
   "name": "product-tools",
-  "version": "0.4.0",
-  "description": "Ferramentas de produto: pipeline de refinamento (base de conhecimento no Confluence + pesquisa de mercado + engenharia + qualidade + escrita), formatação direta de User Stories e Bugs no padrão DoR e documentação de funcionalidades e regras de negócio no Confluence.",
+  "version": "0.6.0",
+  "description": "Ferramentas de produto: pipeline de refinamento (base de conhecimento no Confluence + pesquisa de mercado + engenharia + qualidade + escrita), formatação direta de User Stories e Bugs no padrão DoR, e documentação e consulta de regras de negócio em Gherkin no Confluence ou Notion.",
   "author": {
     "name": "Erick"
   },
   "userConfig": {
     "confluence_site": {
+      "type": "string",
+      "title": "Site do Confluence",
       "description": "Site do Confluence usado pelo plugin (leitura no /refine e publicação no /rule-update), ex: nstech-empresa.atlassian.net. Em branco = primeiro site disponível no conector Atlassian.",
+      "required": false,
       "sensitive": false
     },
     "confluence_spaces": {
+      "type": "string",
+      "title": "Espaço(s) da base de conhecimento",
       "description": "Chave(s) do(s) espaço(s) do Confluence com a base de conhecimento do seu módulo, lida pelo /refine. Para mais de um espaço, separe por vírgula (ex: NSSEG,NSSEGCOT).",
+      "required": false,
       "sensitive": false
     },
     "doc_space_key": {
+      "type": "string",
+      "title": "Espaço de documentação",
       "description": "Chave do espaço do Confluence onde o /rule-update publica as regras de negócio em Gherkin (ex: nsseg).",
+      "required": false,
       "sensitive": false
     },
     "doc_root_folder_id": {
+      "type": "string",
+      "title": "Raiz da documentação de regras",
       "description": "ID do folder ou página raiz sob a qual o /rule-update cria a estrutura plataforma / domínio / funcionalidade (ex: 14319631). Pegue na URL no Confluence. Em branco = o /rule-update usa a raiz informada no chat ou pergunta.",
+      "required": false,
       "sensitive": false
     }
-  }
+  },
+  "homepage": "https://github.com/erickaucca/skill-product-tools",
+  "repository": "https://github.com/erickaucca/skill-product-tools",
+  "keywords": [
+    "produto",
+    "seguros",
+    "refinamento",
+    "user-story",
+    "bug",
+    "dor",
+    "confluence",
+    "documentacao",
+    "gherkin",
+    "regras-de-negocio"
+  ]
 }

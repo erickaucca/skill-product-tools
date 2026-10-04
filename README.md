@@ -11,14 +11,14 @@ de produto e a formatação direta de User Stories e Bugs no padrão DoR.
 | `refine` | skill | `/product-tools:refine` — pipeline completo: base de conhecimento (Confluence) → pesquisa de mercado → engenharia → qualidade → escrita da US |
 | `format-user-story` | skill | `/product-tools:format-user-story` — formata uma US diretamente, sem passar pelo pipeline |
 | `format-bug` | skill | `/product-tools:format-bug` — formata um bug diretamente, no padrão DoR |
-| `rule-update` | skill | `/product-tools:rule-update` — lê material do chat, US do Azure e texto colado e consolida as regras de negócio num `.md` em Gherkin, atualizando a página no Confluence ou Notion, na estrutura `plataforma / domínio / funcionalidade` sob uma raiz informada (cria os níveis que faltam, atualiza se existir). Exige os três campos no cabeçalho |
+| `rule-update` | skill | `/product-tools:rule-update` — lê material do chat, US do Azure e texto colado e consolida as regras de negócio num `.md` em Gherkin, atualizando a página no Confluence ou Notion, na estrutura `plataforma / domínio / funcionalidade` sob uma raiz informada (cria os níveis que faltam, atualiza se existir). Exige os três campos no cabeçalho; o histórico fica numa página filha |
 | `rule-search` | skill | `/product-tools:rule-search` — consulta somente leitura: localiza as regras de uma funcionalidade (`plataforma / domínio / funcionalidade` sob uma raiz) e mostra em Markdown no chat; se não achar, diz onde parou para você ajustar |
-| `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
+| `base-conhecimento`, `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
 
-Todas as skills também disparam automaticamente pelo contexto da conversa
-(ex: descrever uma necessidade sem digitar `/refine` já pode acionar
-`format-user-story`), além de poderem ser chamadas de forma explícita pelo
-comando.
+`refine` e `rule-update` só rodam quando você os chama (`disable-model-invocation`),
+porque têm custo alto ou escrevem no Confluence/Notion. `rule-search` é somente leitura. `format-user-story` e
+`format-bug` também disparam pelo contexto da conversa (ex: pedir "escreve uma
+US para..."), mas não em pedidos de código ou depuração.
 
 ## Instalação (time de produto, sem CLI)
 
@@ -32,9 +32,34 @@ comando.
    - `doc_root_folder_id` — opcional, ID do folder ou página raiz sob a qual
      o `/rule-update` cria `plataforma / domínio / funcionalidade` (ex: `14319631`);
      pegue na URL
-4. Conectar o conector **Atlassian** na conta (usado para ler o Confluence)
+4. Conectar o conector **Atlassian** na conta (usado para ler e, no
+   `/rule-update`, escrever no Confluence). Para destino Notion, conectar o
+   conector **Notion**. O plugin não embute um MCP próprio, para não duplicar o
+   login do conector que você já usa
 5. Pronto — os comandos ficam disponíveis em qualquer sessão Cowork, inclusive
    pelo app mobile
+
+## Receber atualizações
+
+**Claude Code** (instalação por marketplace):
+
+```
+/plugin marketplace update erick-product-tools
+/plugin update product-tools@erick-product-tools
+```
+
+Depois, reinicie a sessão. Para receber sem comando manual, ative o
+auto-update em `/plugin` → Marketplaces (em marketplaces de terceiros costuma
+vir desligado). A configuração do PO (`userConfig`) é preservada; se uma versão
+nova pedir campos novos, só eles são solicitados.
+
+**Cowork** (plugin instalado pelo diretório da organização): a atualização
+depende da sincronização do marketplace feita pelo admin do workspace — o
+usuário final normalmente não executa comando. Confirme com o admin como e com
+que frequência a sincronização ocorre.
+
+Se o repositório for privado, cada usuário precisa de acesso ao GitHub (login
+do `git` ou `GITHUB_TOKEN`), senão a atualização falha.
 
 ## Configuração por PO
 
@@ -70,6 +95,14 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
    na hierarquia plataforma / domínio / funcionalidade e registra a US na página filha de histórico (a página da funcionalidade guarda só a versão vigente). A próxima execução do
    `/refine` já encontra a regra atualizada.
 
+## Desenvolvimento
+
+- `python3 scripts/validate.py` — validação estática (manifestos, frontmatter,
+  agentes, hooks, referências); roda também no CI (`.github/workflows/validate.yml`)
+- `skills/*/evals/` — casos de teste para `skill-creator` (`evals.json`) e de
+  gatilho (`trigger-evals.json`)
+- Veja `CLAUDE.md` (convenções e checklist de release) e `CHANGELOG.md`
+
 ## Escopo do MVP (o que ainda não tem)
 
 - O `/refine` só lê o Confluence; escrita é feita apenas pelo `rule-update`,
@@ -83,27 +116,25 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
 
 ```
 product-tools/
-├── .claude-plugin/plugin.json      # userConfig: confluence_site, confluence_spaces, doc_space_key, doc_root_folder_id
+├── .claude-plugin/
+│   ├── plugin.json                # userConfig: confluence_site, confluence_spaces, doc_space_key, doc_root_folder_id
+│   └── marketplace.json
 ├── hooks/
 │   ├── hooks.json                 # SessionStart → injeta a configuração do PO
 │   └── config-context.sh
 ├── skills/
-│   ├── refine/
-│   │   ├── SKILL.md
-│   │   └── references/formato-criticas.md
-│   ├── rule-search/
-│   │   └── SKILL.md
-│   ├── rule-update/
-│   │   ├── SKILL.md
-│   │   └── references/ (confluence.md, notion.md, template-documento.md)
-│   ├── format-user-story/
-│   │   ├── SKILL.md
-│   │   └── references/
-│   └── format-bug/
-│       ├── SKILL.md
-│       └── references/
-└── agents/
-    ├── pesquisa-mercado.md
-    ├── engenharia.md
-    └── qualidade.md
+│   ├── refine/                    # SKILL.md, references/formato-criticas.md, evals/
+│   ├── rule-update/               # SKILL.md, references/ (confluence, notion, template-documento), evals/
+│   ├── rule-search/               # SKILL.md, evals/
+│   ├── format-user-story/         # SKILL.md, references/, evals/
+│   └── format-bug/                # SKILL.md, references/, evals/
+├── agents/
+│   ├── base-conhecimento.md
+│   ├── pesquisa-mercado.md
+│   ├── engenharia.md
+│   └── qualidade.md
+├── scripts/validate.py
+├── .github/workflows/validate.yml
+├── CHANGELOG.md
+└── CLAUDE.md
 ```
