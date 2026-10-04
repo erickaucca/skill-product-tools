@@ -21,7 +21,7 @@ A delegação informa: a descrição da necessidade, os espaços a consultar (`c
 1. Se `confluence_site` foi informado, obtenha o `cloudId` desse site via `getAccessibleAtlassianResources`; senão, use o único/primeiro site disponível.
 2. Extraia de 2 a 5 termos-chave da necessidade (entidades de negócio, processo, ex: "cotação", "endosso", "franquia", "resseguro").
 3. Busque com `searchConfluenceUsingCql`, restrito aos espaços informados, ex.: `space in ("NSSEG","NSSEGCOT") AND type = page AND text ~ "cotação endosso"`. Refaça com termos alternativos se vier vazio.
-4. Leia (`getConfluencePage`) as páginas mais relevantes — no máximo 5. Priorize páginas de regra de negócio (com Page Properties e "Lógica da regra") e de funcionalidade (com "Comportamento esperado"). Ignore páginas de "Histórico de mudanças", exceto para entender uma mudança recente.
+4. Leia (`getConfluencePage`) as páginas mais relevantes — no máximo 5. Priorize páginas de funcionalidade na hierarquia plataforma / domínio / funcionalidade, com regras `RN-xx` em Gherkin (padrão da skill `rule-update`). Ignore a página filha "Histórico de mudanças", exceto para entender uma mudança recente.
 
 ## Saída
 

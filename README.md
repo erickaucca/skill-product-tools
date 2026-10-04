@@ -11,11 +11,12 @@ de produto e a formatação direta de User Stories e Bugs no padrão DoR.
 | `refine` | skill | `/product-tools:refine` — pipeline completo: base de conhecimento (Confluence) → pesquisa de mercado → engenharia → qualidade → escrita da US |
 | `format-user-story` | skill | `/product-tools:format-user-story` — formata uma US diretamente, sem passar pelo pipeline |
 | `format-bug` | skill | `/product-tools:format-bug` — formata um bug diretamente, no padrão DoR |
-| `document-feature` | skill | `/product-tools:document-feature` — cria/atualiza no Confluence (espaço de documentação configurado) páginas de funcionalidade, regra de negócio e histórico de mudanças, no template padrão |
+| `rule-update` | skill | `/product-tools:rule-update` — lê material do chat, US do Azure e texto colado e consolida as regras de negócio num `.md` em Gherkin, atualizando a página no Confluence ou Notion, na estrutura `plataforma / domínio / funcionalidade` sob uma raiz informada (cria os níveis que faltam, atualiza se existir). Exige os três campos no cabeçalho; o histórico fica numa página filha |
+| `rule-search` | skill | `/product-tools:rule-search` — consulta somente leitura: localiza as regras de uma funcionalidade (`plataforma / domínio / funcionalidade` sob uma raiz) e mostra em Markdown no chat; se não achar, diz onde parou para você ajustar |
 | `base-conhecimento`, `pesquisa-mercado`, `engenharia`, `qualidade` | agentes | usados internamente pelo `refine`; não são chamados diretamente pelo time |
 
-`refine` e `document-feature` só rodam quando você os chama (`disable-model-invocation`),
-porque têm custo alto ou escrevem no Confluence. `format-user-story` e
+`refine` e `rule-update` só rodam quando você os chama (`disable-model-invocation`),
+porque têm custo alto ou escrevem no Confluence/Notion. `rule-search` é somente leitura. `format-user-story` e
 `format-bug` também disparam pelo contexto da conversa (ex: pedir "escreve uma
 US para..."), mas não em pedidos de código ou depuração.
 
@@ -27,12 +28,14 @@ US para..."), mas não em pedidos de código ou depuração.
    - `confluence_spaces` — chave(s) do(s) espaço(s) do Confluence com a base de
      conhecimento do seu módulo, separadas por vírgula (ex: `NSSEG,NSSEGCOT`)
    - `confluence_site` — opcional, ex: `nstech-empresa.atlassian.net`
-   - `doc_space_key` — espaço onde o `/document-feature` publica, ex: `nsseg`
-   - `doc_root_folder_id` — opcional, ID do folder que agrupa os domínios
-     (ex: `14319631`, "Serviços e sistemas"); pegue na URL do folder
+   - `doc_space_key` — espaço onde o `/rule-update` publica, ex: `nsseg`
+   - `doc_root_folder_id` — opcional, ID do folder ou página raiz sob a qual
+     o `/rule-update` cria `plataforma / domínio / funcionalidade` (ex: `14319631`);
+     pegue na URL
 4. Conectar o conector **Atlassian** na conta (usado para ler e, no
-   `/document-feature`, escrever no Confluence). O plugin não embute um MCP
-   próprio, para não duplicar o login do conector que você já usa
+   `/rule-update`, escrever no Confluence). Para destino Notion, conectar o
+   conector **Notion**. O plugin não embute um MCP próprio, para não duplicar o
+   login do conector que você já usa
 5. Pronto — os comandos ficam disponíveis em qualquer sessão Cowork, inclusive
    pelo app mobile
 
@@ -63,7 +66,7 @@ do `git` ou `GITHUB_TOKEN`), senão a atualização falha.
 Cada PO tem sua própria configuração, guardada localmente na máquina dele. No
 início de cada sessão, um hook (`hooks/config-context.sh`) informa ao Claude os
 valores configurados: o `/refine` busca a base de conhecimento só nos
-`confluence_spaces`, e o `/document-feature` publica só no `doc_space_key`.
+`confluence_spaces`, e o `/rule-update` publica só no `doc_space_key`.
 Cloud ID e ID do espaço são descobertos automaticamente pelo conector Atlassian. Para usar outro espaço numa execução pontual:
 
 ```
@@ -88,8 +91,8 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
 
 1. `/product-tools:refine` — lê a base de conhecimento (Confluence), refina e gera a US
 2. Time desenvolve e entrega a US (Azure DevOps)
-3. `/product-tools:document-feature` — atualiza a página da funcionalidade/regra
-   no espaço de documentação e registra a US no histórico de mudanças. A próxima execução do
+3. `/product-tools:rule-update` — atualiza as regras da funcionalidade (Gherkin)
+   na hierarquia plataforma / domínio / funcionalidade e registra a US na página filha de histórico (a página da funcionalidade guarda só a versão vigente). A próxima execução do
    `/refine` já encontra a regra atualizada.
 
 ## Desenvolvimento
@@ -102,7 +105,7 @@ Se alguma etapa do pipeline apontar críticas, responda no mesmo fio da conversa
 
 ## Escopo do MVP (o que ainda não tem)
 
-- O `/refine` só lê o Confluence; escrita é feita apenas pelo `document-feature`,
+- O `/refine` só lê o Confluence; escrita é feita apenas pelo `rule-update`,
   sempre no espaço `doc_space_key`
 - Sem MCP de ADO: leitura/escrita de cards do Azure DevOps ainda não é feita
   por este plugin
@@ -121,7 +124,8 @@ product-tools/
 │   └── config-context.sh
 ├── skills/
 │   ├── refine/                    # SKILL.md, references/formato-criticas.md, evals/
-│   ├── document-feature/          # SKILL.md, evals/
+│   ├── rule-update/               # SKILL.md, references/ (confluence, notion, template-documento), evals/
+│   ├── rule-search/               # SKILL.md, evals/
 │   ├── format-user-story/         # SKILL.md, references/, evals/
 │   └── format-bug/                # SKILL.md, references/, evals/
 ├── agents/

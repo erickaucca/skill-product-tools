@@ -32,6 +32,6 @@ show() { printf '%s' "${1:-(não configurado)}"; }
 echo "[product-tools] Configuração do PO:"
 echo "[product-tools]   confluence_site = $(show "$site")"
 echo "[product-tools]   confluence_spaces (base de conhecimento do /refine) = $(show "$spaces")"
-echo "[product-tools]   doc_space_key (destino do /document-feature) = $(show "$doc_space")"
-echo "[product-tools]   doc_root_folder_id (folder dos domínios no /document-feature) = $(show "$doc_folder")"
+echo "[product-tools]   doc_space_key (destino do /rule-update) = $(show "$doc_space")"
+echo "[product-tools]   doc_root_folder_id (raiz plataforma/domínio/funcionalidade no /rule-update) = $(show "$doc_folder")"
 exit 0

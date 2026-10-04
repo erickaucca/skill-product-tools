@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.6.0
+
+### Alterado (quebra de contrato)
+- `document-feature` foi substituída por **`rule-update`** (`/product-tools:rule-update`). O comando antigo deixa de existir.
+- Novo modelo de documentação: um documento por funcionalidade com **todas as regras de negócio em Gherkin** (`RN-xx` estáveis), consolidado de forma cumulativa a partir de material do chat, US do Azure DevOps e texto colado. Substitui os três tipos de página (funcionalidade, regra com Page Properties, histórico em tabela) e a página de índice.
+- Destino em **Confluence ou Notion**, na hierarquia `raiz / plataforma / domínio / funcionalidade`: atualiza se a combinação existir, cria só os níveis que faltam se não existir.
+- Histórico fora da página da regra: página filha `Histórico de mudanças`, entradas mais recentes no topo, com `Antes`/`Depois` nas regras alteradas.
+- Portões antes de agir: cabeçalho (`plataforma`, `domínio`, `funcionalidade`) e raiz obrigatórios; uma rodada única de perguntas (referências a outras funcionalidades, conflitos, lacunas); confirmação do diff antes de gravar.
+- `doc_root_folder_id` agora é a **raiz** sob a qual a hierarquia é criada (antes, o folder que agrupava os domínios). Ajuste o valor se necessário.
+- `refine`, `base-conhecimento` e hook de sessão passam a se referir ao `/rule-update` e ao novo padrão de páginas.
+
+### Adicionado
+- Skill **`rule-search`** (`/product-tools:rule-search`): consulta somente leitura que localiza as regras de uma funcionalidade e as mostra em Markdown no chat; se não encontra, informa em que nível parou.
+- Evals de `rule-update` e `rule-search`.
+
 ## 0.5.0
 
 ### Corrigido

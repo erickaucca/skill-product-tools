@@ -11,7 +11,7 @@
       "name": "product-tools",
       "source": "./",
       "category": "productivity",
-      "description": "Pipeline de refinamento de produto (base de conhecimento no Confluence, pesquisa de mercado, engenharia, qualidade, escrita), formatadores de User Story e Bug no padrão DoR e documentação de funcionalidades e regras no Confluence.",
+      "description": "Pipeline de refinamento de produto (base de conhecimento no Confluence, pesquisa de mercado, engenharia, qualidade, escrita), formatadores de User Story e Bug no padrão DoR e documentação e consulta de regras de negócio em Gherkin (Confluence ou Notion).",
       "tags": [
         "produto",
         "seguros",

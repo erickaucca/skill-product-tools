@@ -132,8 +132,8 @@ engenharia + plano de testes sugerido) como insumo. Ela gera o arquivo `.md`
 final no padrão DoR e o entrega ao PO — você não reimplementa esse formato aqui.
 
 Depois de entregar a US, lembre o PO em uma linha: quando a US for entregue,
-`/product-tools:document-feature` atualiza a página da funcionalidade e o
-histórico de mudanças no Confluence.
+`/product-tools:rule-update` atualiza as regras da funcionalidade (em Gherkin)
+e o histórico de mudanças no Confluence ou Notion.
 
 ## Segurança
 
