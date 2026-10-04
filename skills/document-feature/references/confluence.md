@@ -2,41 +2,43 @@
 
 Leia este arquivo só quando o destino for Confluence.
 
-## Atalho: usuário informou o link da página
+## Raiz e IDs
 
-Extraia do URL o site (`<site>.atlassian.net`) e o `pageId` (`/pages/<id>/`). Com isso:
-- **Cloud ID**: use o próprio site do link. Só chame `getAccessibleAtlassianResources` se `getConfluencePage` não aceitar o site direto
-- **Espaço e folder**: dispensados, a página já existe. Não chame `getConfluenceSpaces` nem busque folders
+A **raiz** vem da conversa: link de uma página/folder, ou nome + espaço. Do link extraia o site (`<site>.atlassian.net`) e o ID (`/pages/<id>/` ou `/folder/<id>`). Se o usuário não informou raiz, use a configuração do plugin (bloco `[product-tools] Configuração do PO:` no contexto, ou variáveis `CLAUDE_PLUGIN_OPTION_*`) **e diga qual raiz está usando**; sem nenhuma, pergunte.
 
-## Página nova (sem link)
-
-Site, espaço e folder **não ficam fixos nesta skill**. Vêm da configuração do plugin, injetada no início da sessão em bloco iniciado por `[product-tools] Configuração do PO:` (valor "(não configurado)" = em branco).
-
-| Campo | Uso | Exemplo |
-|---|---|---|
-| `confluence_site` | site do Confluence | `nstech-empresa.atlassian.net` |
-| `doc_space_key` | espaço de destino da documentação | `nsseg` |
-| `doc_root_folder_id` | folder que contém os folders de domínio | `14319631` |
-
-Ordem de resolução: (1) informado pelo PO nesta conversa → (2) bloco de configuração no contexto → (3) variáveis `CLAUDE_PLUGIN_OPTION_CONFLUENCE_SITE`, `CLAUDE_PLUGIN_OPTION_DOC_SPACE_KEY`, `CLAUDE_PLUGIN_OPTION_DOC_ROOT_FOLDER_ID` (se tiver terminal) → (4) perguntar. Nunca use valores de exemplo como configuração.
+| Campo de configuração | Uso |
+|---|---|
+| `confluence_site` | site do Confluence |
+| `doc_space_key` | espaço de documentação |
+| `doc_root_folder_id` | folder/página raiz sob a qual fica `plataforma / domínio / funcionalidade` |
 
 IDs técnicos são **resolvidos**, nunca pedidos ao PO:
-- **Cloud ID**: `getAccessibleAtlassianResources`, pelo URL de `confluence_site`. Sem site configurado e com um só recurso, use-o; com vários, pergunte o site pelo nome
-- **ID do espaço**: `getConfluenceSpaces` pela chave `doc_space_key`. Sem chave configurada, pergunte onde publicar
-- **Folder do domínio**: dentro do folder raiz (`doc_root_folder_id`; se vazio, pergunte o **nome** do folder e localize com `searchConfluenceUsingCql`: `space = "<doc_space_key>" AND type = folder AND title = "<nome>"`). Depois localize o Folder do domínio com `title ~ "<domínio>"`. Se não existir, avise que precisa ser criado manualmente (a automação só cria páginas)
+- **Cloud ID**: do link; senão `getAccessibleAtlassianResources` pelo URL de `confluence_site` (um só recurso: use-o; vários: pergunte o site pelo nome)
+- **ID do espaço**: do link; senão `getConfluenceSpaces` pela chave. Só é necessário para criar páginas
+- **ID da raiz**: do link; senão `searchConfluenceUsingCql` (`space = "<chave>" AND title = "<nome>"`)
 
-O destino é **sempre** `doc_space_key`. `confluence_spaces` vale só para leitura no `/refine`; nunca publique nesses espaços por causa dele.
+`confluence_spaces` vale só para leitura no `/refine`; nunca publique nesses espaços por causa dele. Tickets (US e Bug) ficam no **Azure DevOps**.
 
-## Leitura
+## Localizar a combinação (descendo a hierarquia)
 
-`getConfluencePage` no destino. Chame `getConfluencePageDescendants` só se o usuário disser que existem páginas filhas relevantes (ex: histórico antigo em página separada).
+Nunca busque a funcionalidade por título solto no espaço. Desça a partir da raiz, um nível por vez:
+
+1. **Plataforma**: filhos diretos da raiz (`searchConfluenceUsingCql`: `parent = <rootId>`; se não retornar, `getConfluencePageDescendants` na raiz). Nome igual à plataforma, ignorando maiúsculas e acentos
+2. **Domínio**: filhos do nível anterior, mesmo critério
+3. **Funcionalidade**: filhos do nível anterior, mesmo critério
+
+Pare no primeiro nível que não existir: ele e os seguintes são os que faltam criar. Se o nível existir, guarde o `id` para ser o `parentId` do seguinte. Um nível existente pode ser **Folder nativo ou página**; use-o como está.
+
+Se a página da funcionalidade existe, leia-a com `getConfluencePage`.
 
 ## Gravação
 
-- Existente: `updateConfluencePage` com o corpo completo consolidado
-- Nova: `createConfluencePage` com `parentId` do Folder do domínio
-- Gherkin em bloco de código, um cenário por bloco, nunca corridos em parágrafo
-- Título único no espaço inteiro, com prefixo da plataforma e funcionalidade (ex: "NSRE — Resseguro — Relatório"), nunca só "Relatório"
-- Dado sensível (ex: percentual de retenção de tratado): pergunte se precisa de Page Restrictions. Restrição na pasta do domínio propaga para as filhas
+**Combinação existente** → `updateConfluencePage` na página da funcionalidade com o corpo completo consolidado. Não altere as páginas de plataforma e domínio.
 
-Tickets (US e Bug) ficam no **Azure DevOps**, não no Jira, mesmo com o Confluence no mesmo tenant Atlassian.
+**Combinação inexistente** → crie só os níveis que faltam, na ordem, cada um com `parentId` do nível acima (`createConfluencePage`):
+- **Plataforma e domínio**: páginas de navegação, com uma frase de descrição e, se quiser, a macro nativa de lista de páginas filhas. Nunca regra de negócio. A automação **não cria Folders nativos**, então os níveis novos são páginas
+- **Funcionalidade**: página com o documento completo
+
+**Títulos** são únicos no espaço inteiro. Use o nome puro do nível (`NSRE`, `Resseguro`, `Relatório`). Se o nome já existir em outro caminho do espaço, o Confluence recusa: pergunte antes de criar e, se aprovado, desambigue com prefixo do nível acima (ex: `NSRE — Resseguro`, `NSRE — Resseguro — Relatório`), avisando o usuário.
+
+Formato: Gherkin em bloco de código, um cenário por bloco, nunca corridos em parágrafo. Dado sensível (ex: percentual de retenção de tratado): pergunte se precisa de Page Restrictions; restrição no nível pai propaga para as filhas.
