@@ -1,6 +1,6 @@
 ---
-name: document-feature
-description: "Lê o material do chat, US do Azure DevOps e texto colado, e consolida TODAS as regras de negócio de uma funcionalidade num .md em Gherkin, incrementando e atualizando a página no Confluence ou Notion, dentro da estrutura plataforma / domínio / funcionalidade a partir de uma raiz informada. Exige plataforma, domínio e funcionalidade no cabeçalho; sem isso, pergunta antes de analisar. Se houver referência a outra funcionalidade, pergunta antes de alterar. Use para documentar funcionalidade ou regra de negócio, ou atualizar documentação após uma US. Invocável via /document-feature."
+name: rule-update
+description: "Lê o material do chat, US do Azure DevOps e texto colado, e consolida TODAS as regras de negócio de uma funcionalidade num .md em Gherkin, incrementando e atualizando a página no Confluence ou Notion, dentro da estrutura plataforma / domínio / funcionalidade a partir de uma raiz informada. Exige plataforma, domínio e funcionalidade no cabeçalho; sem isso, pergunta antes de analisar. Se houver referência a outra funcionalidade, pergunta antes de alterar. Use para documentar funcionalidade ou regra de negócio, ou atualizar documentação após uma US. Invocável via /rule-update."
 ---
 
 # Documentação de Regras de Negócio em Gherkin

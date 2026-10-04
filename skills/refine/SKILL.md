@@ -71,10 +71,10 @@ Use o conector Atlassian (Rovo):
    `space in ("NSSEG","NSSEGCOT") AND type = page AND text ~ "cotação endosso"`.
    Refaça com termos alternativos se vier vazio.
 4. Leia (`getConfluencePage`) as páginas mais relevantes — no máximo 5.
-   Priorize páginas no padrão da skill `document-feature`: páginas de regra de
-   negócio (com Page Properties e "Lógica da regra") e páginas de
-   funcionalidade (com "Comportamento esperado"). Ignore páginas de
-   "Histórico de mudanças", exceto para entender uma mudança recente.
+   Priorize páginas no padrão da skill `rule-update`: páginas de funcionalidade
+   na hierarquia plataforma / domínio / funcionalidade, com regras `RN-xx` em
+   Gherkin. Ignore a seção "Histórico de mudanças", exceto para entender uma
+   mudança recente.
 
 ### O que anexar ao documento de trabalho
 
@@ -142,8 +142,8 @@ apresentá-lo via `present_files` — você não precisa reimplementar esse
 formato aqui.
 
 Depois de apresentar a US, lembre o PO em uma linha: quando a US for entregue,
-`/product-tools:document-feature` atualiza a página da funcionalidade e o
-histórico de mudanças no Confluence.
+`/product-tools:rule-update` atualiza as regras da funcionalidade (em Gherkin)
+e o histórico de mudanças no Confluence ou Notion.
 
 ## O que esta skill não faz
 

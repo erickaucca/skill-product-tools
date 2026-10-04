@@ -7,7 +7,7 @@
   },
   "userConfig": {
     "confluence_site": {
-      "description": "Site do Confluence usado pelo plugin (leitura no /refine e publicação no /document-feature), ex: nstech-empresa.atlassian.net. Em branco = primeiro site disponível no conector Atlassian.",
+      "description": "Site do Confluence usado pelo plugin (leitura no /refine e publicação no /rule-update), ex: nstech-empresa.atlassian.net. Em branco = primeiro site disponível no conector Atlassian.",
       "sensitive": false
     },
     "confluence_spaces": {
@@ -15,11 +15,11 @@
       "sensitive": false
     },
     "doc_space_key": {
-      "description": "Chave do espaço do Confluence onde o /document-feature publica páginas de funcionalidade, regra de negócio e histórico (ex: nsseg).",
+      "description": "Chave do espaço do Confluence onde o /rule-update publica as regras de negócio em Gherkin (ex: nsseg).",
       "sensitive": false
     },
     "doc_root_folder_id": {
-      "description": "ID do folder que contém os folders de domínio (Cotação, Emissão, Sinistro...) no espaço de documentação (ex: 14319631, o folder 'Serviços e sistemas'). Pegue na URL do folder no Confluence. Em branco = o /document-feature pergunta o nome do folder e localiza por busca.",
+      "description": "ID do folder ou página raiz sob a qual o /rule-update cria a estrutura plataforma / domínio / funcionalidade (ex: 14319631). Pegue na URL no Confluence. Em branco = o /rule-update usa a raiz informada no chat ou pergunta.",
       "sensitive": false
     }
   }
