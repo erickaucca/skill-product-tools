@@ -1,12 +1,13 @@
 ---
 name: format-user-story
 description: >
-  Formata descrições livres em User Stories estruturadas seguindo a Definition of Ready (DoR).
-  Use esta skill SEMPRE que o usuário descrever uma funcionalidade, requisito, necessidade do sistema
-  ou qualquer pedido de desenvolvimento — mesmo que ele não diga explicitamente "user story" ou "US".
-  Frases como "quero que o usuário consiga...", "preciso de uma funcionalidade que...", "o sistema deve...",
-  "criar uma tela de...", "implementar...", "adicionar..." são todos gatilhos para esta skill.
-  Também é chamada como etapa final do pipeline /refine.
+  Formata uma necessidade de produto descrita livremente em User Story estruturada no padrão
+  Definition of Ready (Como/Quero/Para, critérios de aceite, plano de testes BDD, checklist DoR),
+  entregue como arquivo .md. Use quando um PO/PM/analista de produto pedir para escrever,
+  estruturar ou formatar uma User Story ou descrever uma necessidade para o backlog (ex.: "escreve
+  uma US para...", "preciso de uma história de usuário sobre..."). Também é a etapa final do /refine.
+  Não use para implementar código nem para pedidos de desenvolvimento feitos direto no repositório.
+argument-hint: "<descrição da necessidade>"
 ---
 
 # User Story Formatter
@@ -31,7 +32,10 @@ Se algum dos três elementos do formato "Como / Quero / Para" não estiver claro
 
 **Saída obrigatória em arquivo .md**
 
-A US deve ser **sempre** salva como arquivo `.md` em `/mnt/user-data/outputs/` e apresentada ao usuário via `present_files` para download. Nunca entregue a US apenas como texto no chat.
+A US deve ser **sempre** salva como arquivo `.md` e entregue ao usuário. Nunca entregue a US apenas como texto no chat.
+
+* **Cowork / ambientes com a ferramenta `present_files`**: salve em `/mnt/user-data/outputs/` e apresente o arquivo via `present_files` para download.
+* **Claude Code / sem `present_files`**: salve no diretório de trabalho atual e informe o caminho do arquivo.
 
 **Convenção de nomenclatura do arquivo:**
 
@@ -144,4 +148,4 @@ Após salvar e apresentar o arquivo `.md`, informe o nome do arquivo gerado e pe
 
 > *"Quer ajustar algum detalhe, adicionar mais cenários de teste ou revisar os critérios de aceite?"*
 
-Se o usuário pedir ajustes, **sobrescreva o mesmo arquivo** com as alterações — não crie um novo. Edite apenas as seções afetadas e reapresente o arquivo via `present_files`.
+Se o usuário pedir ajustes, **sobrescreva o mesmo arquivo** com as alterações — não crie um novo. Edite apenas as seções afetadas e reapresente o arquivo (via `present_files`, quando disponível, ou informando o caminho).

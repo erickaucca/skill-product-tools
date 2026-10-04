@@ -1,0 +1,26 @@
+{
+  "skill_name": "format-bug",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "O cliente reclamou que ao escolher 12x no cartão Elo a parcela aparece R$ 0,00 e o botão Confirmar fica travado. Deveria calcular os juros normalmente.",
+      "expected_output": "Arquivo BUG-XXX_*.md no padrão DoR.",
+      "expectations": [
+        "Gera arquivo .md",
+        "Separa Cenário Atual e Cenário Desejado",
+        "Evidências sinalizadas como pendentes (não inventadas)",
+        "Severidade e prioridade preenchidas",
+        "Plano de testes inclui reprodução e regressão"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Tá quebrando.",
+      "expected_output": "Pergunta objetiva sobre o cenário atual/desejado antes de gerar.",
+      "expectations": [
+        "Faz uma pergunta por vez",
+        "Não gera o bug com informação inventada"
+      ]
+    }
+  ]
+}

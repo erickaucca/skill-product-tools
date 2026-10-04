@@ -1,13 +1,13 @@
 # Formato Padrão — Relatório de Críticas
 
 > Arquivo de referência compartilhado pelos agentes do pipeline `refine`
-> (`pesquisa-mercado`, `engenharia`, `qualidade`). Caminho sugerido no pacote:
-> `product-tools/skills/refine/references/formato-criticas.md`
+> (`pesquisa-mercado`, `engenharia`, `qualidade`). O orquestrador (`refine`)
+> informa o caminho deste arquivo na delegação a cada agente.
 >
 > Qualquer agente do pipeline que precisar retornar `status: contem_criticas`
 > deve gerar o corpo do documento **exatamente** neste formato. O orquestrador
-> (`refine`) só interpreta o campo `status` no topo — o restante é para leitura
-> humana (PO/PM).
+> (`refine`) só interpreta o campo `status` na primeira linha — o restante é para
+> leitura humana (PO/PM).
 
 ---
 
@@ -18,8 +18,11 @@ Todo agente do pipeline retorna sempre estas duas informações, nesta ordem:
 ```
 status: revisado | contem_criticas
 ---
-[corpo do documento — US/bug final OU relatório de críticas abaixo]
+[corpo: SOMENTE a seção nova do agente (quando revisado) OU o relatório de críticas abaixo]
 ```
+
+O agente **não** reproduz o documento recebido nem seções de etapas anteriores:
+o orquestrador anexa a seção devolvida ao documento de trabalho.
 
 ---
 

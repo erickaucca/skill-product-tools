@@ -1,0 +1,35 @@
+{
+  "skill_name": "format-user-story",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Escreve uma US: quero que o cliente consiga parcelar o pagamento do checkout em até 12x",
+      "expected_output": "Arquivo US-XXX_*.md no padrão DoR.",
+      "expectations": [
+        "Gera arquivo .md (não apenas texto no chat)",
+        "Descrição no formato Como/Quero/Para",
+        "Entre 3 e 8 critérios de aceite verificáveis",
+        "Plano de testes BDD com caminho feliz, fluxo alternativo e erro",
+        "Inclui o DoR Checklist"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Preciso de uma funcionalidade nova no portal.",
+      "expected_output": "Faz UMA pergunta objetiva antes de gerar a US.",
+      "expectations": [
+        "Faz exatamente uma pergunta",
+        "Não inventa ator, ação ou benefício"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Ajusta a US anterior: adiciona um cenário de erro para cartão recusado.",
+      "expected_output": "Sobrescreve o mesmo arquivo.",
+      "expectations": [
+        "Não cria arquivo novo com sufixo de versão",
+        "Altera apenas as seções afetadas"
+      ]
+    }
+  ]
+}
