@@ -1,170 +1,235 @@
 ---
 name: document-feature
-description: "Cria ou atualiza páginas de funcionalidade, regra de negócio e histórico de mudanças no Confluence (espaço de documentação configurado no plugin, ex: nsseg), sempre seguindo o template fixo definido nesta skill. Use sempre que o usuário pedir para documentar uma funcionalidade, um serviço, uma regra de negócio (cotação, emissão, sinistro, resseguro, cosseguro, averbação, faturamento), ou criar/atualizar o changelog de uma página no Confluence após a entrega de uma US, mesmo que a palavra 'skill' ou 'template' não apareça explicitamente. Invocável via /document-feature."
+description: "Lê o material do chat (documento gerado na conversa, US do Azure DevOps, texto colado), analisa com cuidado e consolida TODAS as regras de negócio de uma funcionalidade num documento .md em formato Gherkin, incrementando o que já existe no destino (página do Confluence ou Notion) e atualizando-o. Exige no cabeçalho plataforma, domínio e funcionalidade; se faltar qualquer um, pergunta antes de qualquer análise. Se o material ou o destino referenciar outra funcionalidade, pergunta antes de alterar qualquer coisa. Use sempre que o usuário pedir para documentar uma funcionalidade ou regra de negócio, atualizar a documentação após uma US, ou consolidar regras em Gherkin, mesmo que a palavra 'skill' ou 'Gherkin' não apareça. Invocável via /document-feature."
 ---
 
-# Confluence — Documentação de Regras e Funcionalidades
+# Documentação de Regras de Negócio em Gherkin
 
-Skill fonte canônica dos templates de documentação de regras de negócio e funcionalidades no Confluence. Toda mudança de estrutura começa aqui — o Content Template do Confluence (Space Settings → Content Templates) é só um espelho estático desta skill e deve ser atualizado manualmente depois, nunca o contrário.
+Esta skill transforma material solto (conversa, US do Azure DevOps, texto) em **um documento `.md` único e sempre atualizado** com todas as regras de negócio de uma funcionalidade, escritas em Gherkin, e sincroniza esse documento com um destino (Confluence ou Notion).
 
-## Contexto do espaço (configuração do plugin)
+Princípio central: **cumulativo e não destrutivo**. Cada execução lê tudo o que já existe, soma o que é novo e devolve a versão completa. Nunca gera um documento "só com a novidade" e nunca apaga regra existente sem confirmação.
 
-Site, espaço e folder de destino **não ficam fixos nesta skill** — vêm da
-configuração que o PO preencheu ao ativar o plugin. No início da sessão o
-plugin injeta um bloco no contexto iniciado por
-`[product-tools] Configuração do PO:`, com os campos abaixo (valor
-"(não configurado)" = em branco):
+## Ordem obrigatória das etapas
+
+Não pule nem reordene. Cada portão (🚦) bloqueia a etapa seguinte.
+
+1. 🚦 **Portão 1 — Cabeçalho e destino** (antes de qualquer análise)
+2. **Coleta do material** (chat, Azure, texto)
+3. **Leitura do destino atual**
+4. 🚦 **Portão 2 — Referências a outras funcionalidades** (antes de qualquer mudança)
+5. **Análise e consolidação das regras**
+6. 🚦 **Portão 3 — Revisão do diff pelo PO** (antes de escrever no destino)
+7. **Geração do `.md` e atualização do destino**
+
+---
+
+## 🚦 Portão 1 — Cabeçalho e destino
+
+Todo documento tem obrigatoriamente este cabeçalho:
+
+```
+plataforma: NSRE
+domínio: resseguro
+funcionalidade: relatorio
+```
+
+| Campo | O que é | Exemplo |
+|---|---|---|
+| `plataforma` | produto/plataforma dona da funcionalidade | `NSRE` |
+| `domínio` | área de negócio | `resseguro`, `cosseguro`, `sinistro`, `cotação`, `emissão`, `averbação`, `faturamento` |
+| `funcionalidade` | funcionalidade/serviço documentado | `relatorio` |
+
+Além do cabeçalho, é obrigatório saber o **destino**: a página do Confluence ou do Notion que será atualizada (link, ou título + espaço/pasta).
+
+**Como verificar:** procure os quatro itens na instrução do usuário e no contexto da conversa (formato `plataforma: ...`, ou dito em texto livre). Um item só conta como informado se o usuário o disse explicitamente. **Nunca deduza** plataforma, domínio ou funcionalidade a partir do conteúdo do material.
+
+**Se faltar qualquer um, pare.** Não leia material, não analise, não busque no destino. Faça uma única pergunta listando só o que falta, por exemplo:
+
+> Antes de começar, preciso de: **plataforma**, **domínio** e **destino** (link da página no Confluence ou Notion). Já tenho: funcionalidade = relatorio.
+
+Se o destino ainda não existir e o usuário quiser criá-lo, confirme isso, plataforma/domínio/funcionalidade continuam obrigatórios.
+
+Se o destino for Confluence, resolva site, espaço e folder conforme "Configuração do Confluence" abaixo, sem pedir IDs técnicos ao usuário.
+
+## Coleta do material
+
+Fontes aceitas, em qualquer combinação:
+
+- **Material gerado no chat**: documentos do `/refine`, saída do `/format-user-story`, rascunhos e respostas anteriores desta conversa
+- **US do Azure DevOps**: link ou ID do work item. Se não houver ferramenta para ler o Azure DevOps nesta sessão, peça ao usuário para colar título, descrição, regras e critérios de aceite. Nunca invente o conteúdo de uma US a partir do número
+- **Texto colado no chat**: tratado como fonte primária, igual às demais
+
+Leia **todo** o material antes de concluir qualquer coisa: descrição, regras explícitas, critérios de aceite, exemplos, exceções, mensagens de erro, campos, limites, perfis de acesso. Registre de qual fonte veio cada regra (ex: `US-1234`, `chat`, `texto colado`).
+
+Bugs (`/format-bug`) não são fonte de regra nova: correção de defeito é a implementação voltando a bater com a regra que já existia. Se o usuário trouxer um bug, pergunte se ele revela uma regra que nunca foi documentada; só então use.
+
+## Leitura do destino atual
+
+Antes de analisar, leia o conteúdo completo do destino:
+
+- **Confluence**: `getConfluencePage` (e `getConfluencePageDescendants` se houver filhas como o histórico)
+- **Notion**: `notion-fetch` na página
+- Carregue as ferramentas necessárias com `ToolSearch` se ainda não estiverem disponíveis
+
+Se o destino já tem regras, elas são a **base** da consolidação. Preserve IDs, redação e ordem das regras existentes. Se o destino está vazio ou é novo, a base é vazia. Diga ao usuário qual dos dois casos é.
+
+## 🚦 Portão 2 — Referências a outras funcionalidades
+
+Depois de ler material **e** destino, varra os dois em busca de qualquer referência a outra funcionalidade, serviço, tela, relatório, módulo, domínio ou regra geral. Sinais comuns:
+
+- links ou menções a outras páginas ("conforme a regra de cotação", "ver Cosseguro")
+- regras que dependem do resultado ou do estado de outra funcionalidade
+- campos, status ou eventos que pertencem a outro serviço
+- uma US que altera comportamento de funcionalidade vizinha
+- uma regra do destino que remete a página de outro domínio
+
+**Se encontrar qualquer uma, pare e pergunte antes de alterar qualquer coisa.** Liste cada referência com a fonte e peça uma decisão por item, por exemplo:
+
+> Encontrei referências a outras funcionalidades:
+> 1. US-1234 cita "limite de retenção do tratado" (funcionalidade `tratado`). Quero apenas **referenciar**, documentar a regra aqui como regra local, ou **incluir também** na página de `tratado`?
+> 2. A página atual linka "Cálculo de prêmio". Mantenho o link como está?
+
+Opções-padrão a oferecer por referência: (a) só referenciar com link, mantendo a regra na outra funcionalidade; (b) trazer a regra para esta funcionalidade como regra local; (c) atualizar também a outra funcionalidade (exige outro destino e novo Portão 1 para ela); (d) ignorar.
+
+Nunca edite a outra funcionalidade por conta própria. Se não houver nenhuma referência, diga em uma linha que verificou e não encontrou, e siga.
+
+## Análise e consolidação das regras
+
+Com as decisões dos portões, monte a lista completa de regras:
+
+1. Extraia cada regra de negócio do material novo, uma por vez, na menor unidade testável
+2. Compare cada uma com as regras do destino e classifique:
+   - **Nova**: não existe no destino → adicionar
+   - **Igual**: já existe com o mesmo sentido → manter, só somar a nova fonte
+   - **Complementa**: acrescenta condição, exceção ou exemplo a uma regra existente → alterar a regra existente
+   - **Conflita**: contradiz uma regra existente → **não resolva sozinho**; apresente as duas versões com as fontes e pergunte qual vale
+3. Regras do destino que o material novo não menciona **continuam** no documento. Só remova ou marque como descontinuada uma regra se o usuário pedir ou confirmar
+4. Lacunas (valor, limite, perfil, mensagem, comportamento em erro não informados) viram **perguntas ao usuário** ou itens marcados `A DEFINIR`. Nunca preencha com suposição. Um rascunho sugerido é permitido apenas se marcado como `SUGESTÃO, validar`
+
+Faça no máximo 3-4 perguntas por rodada, priorizando conflitos e lacunas que mudam o comportamento.
+
+## 🚦 Portão 3 — Revisão antes de escrever
+
+Antes de gravar no destino, mostre ao usuário um resumo curto do que vai mudar, e **não** o documento inteiro:
+
+- quantas regras novas, alteradas, mantidas e com `A DEFINIR`
+- a lista de regras novas e alteradas (ID + título + uma linha)
+- decisões tomadas nos portões anteriores
+
+Peça confirmação. Só grave no destino depois do "ok". O arquivo `.md` local pode ser gerado antes da confirmação, para o usuário revisar.
+
+## Formato do documento `.md`
+
+Nome do arquivo: `<plataforma>-<dominio>-<funcionalidade>.md` em minúsculas, sem acentos, ex: `nsre-resseguro-relatorio.md`. Salve no diretório de trabalho (ou no scratchpad se a sessão indicar um) e informe o caminho.
+
+Estrutura fixa, nesta ordem:
+
+````markdown
+plataforma: NSRE
+domínio: resseguro
+funcionalidade: relatorio
+
+# <Plataforma> — <Domínio> — <Funcionalidade>
+
+**Última atualização:** DD/MM/AAAA
+**Fontes:** US-1234, US-1301, chat
+
+## Descrição
+Uma ou duas frases sobre o que a funcionalidade faz.
+
+## Regras de negócio
+
+### RN-01 — <título curto da regra>
+**Fonte:** US-1234
+**Status:** Em produção | Em desenvolvimento | Rascunho | Descontinuada
+
+```gherkin
+Funcionalidade: <funcionalidade>
+
+  Cenário: <nome do cenário>
+    Dado que <contexto>
+    E <outra condição>
+    Quando <ação ou evento>
+    Então <resultado esperado>
+    E <outro resultado>
+```
+
+### RN-02 — ...
+
+## Referências a outras funcionalidades
+- <funcionalidade> — <link> — <tipo: referência | regra local trazida | atualizada junto>
+
+## Pontos em aberto
+- A DEFINIR: <lacuna>, <quem decide>
+
+## Histórico de mudanças
+| Data | Fonte | Regras | O que mudou |
+|---|---|---|---|
+| DD/MM/AAAA | US-1234 | RN-03 (nova), RN-01 (alterada) | resumo curto |
+````
+
+Regras de escrita:
+
+- **Cabeçalho** (`plataforma`, `domínio`, `funcionalidade`) é sempre as três primeiras linhas, idêntico em toda versão do documento
+- Gherkin em **português** (`Funcionalidade`, `Cenário`, `Esquema do Cenário`, `Dado`, `Quando`, `Então`, `E`, `Mas`), mesmo estilo em todas as regras
+- Uma regra de negócio = um bloco `RN-xx` com um ou mais cenários. Regra com várias condições ou exceções ganha vários cenários (caminho feliz, exceções, limites, erros), nunca um cenário gigante
+- Use `Esquema do Cenário` + `Exemplos` quando a mesma regra varia por valores (faixas, percentuais, perfis)
+- Cada passo descreve **comportamento observável e testável**, sem detalhe de implementação (nada de nome de tabela, endpoint ou classe, a não ser que a US o imponha)
+- **IDs `RN-xx` são estáveis**: nunca renumere, reaproveite ou reordene IDs existentes. Regras novas recebem o próximo número livre. Regra descontinuada mantém o ID com status `Descontinuada`
+- Cada regra registra a **fonte**. Ao incrementar uma regra existente, some a nova fonte (`US-1234, US-1301`)
+- `Status` reflete o que o usuário informou. Na dúvida entre "em produção" e "em desenvolvimento", pergunte. US é intenção, o documento deve dizer o que é verdade
+- **Histórico de mudanças**: uma linha por execução com mudanças. A linha de uma execução só entra depois do "ok" do Portão 3. Bugs nunca entram
+
+## Atualização do destino
+
+Após o "ok" do Portão 3, atualize o destino com a versão completa do documento. Nunca sobrescreva o destino com conteúdo parcial.
+
+**Confluence**
+1. Resolva site, Cloud ID e espaço (ver abaixo)
+2. Página existente: `updateConfluencePage` com `contentFormat: "markdown"` ou `"html"` conforme o conteúdo, enviando o corpo completo consolidado
+3. Página nova: localize o Folder do domínio dentro do folder raiz com `searchConfluenceUsingCql` e crie com `createConfluencePage`, `parentId` do Folder. Se o Folder do domínio não existir, avise que precisa ser criado manualmente (a automação só cria páginas)
+4. Cenários Gherkin vão em bloco de código, um por bloco, nunca corridos em parágrafo
+5. Título único no espaço inteiro, com prefixo da plataforma e funcionalidade (ex: "NSRE — Resseguro — Relatório"), nunca só "Relatório"
+
+**Notion**
+1. `notion-fetch` na página de destino para conferir que é a correta
+2. Página existente: `notion-update-page` com o conteúdo completo consolidado
+3. Página nova: `notion-create-pages` sob a página/banco que o usuário indicou
+4. Use blocos de código com linguagem `gherkin` para os cenários
+
+**Depois de gravar**
+- Devolva o link do destino e o caminho do `.md`, com resumo de 1-2 linhas (quantas regras novas, alteradas, em aberto). Não repita o documento no chat
+- Se algum dado for sensível (ex: percentual de retenção de tratado), pergunte se a página precisa de restrição de acesso (Page Restrictions no Confluence, permissões no Notion)
+
+## Configuração do Confluence
+
+Site, espaço e folder **não ficam fixos nesta skill**. Vêm da configuração do plugin, injetada no início da sessão em bloco iniciado por `[product-tools] Configuração do PO:` (valor "(não configurado)" = em branco).
 
 | Campo | Uso | Exemplo |
 |---|---|---|
 | `confluence_site` | site do Confluence | `nstech-empresa.atlassian.net` |
 | `doc_space_key` | espaço de destino da documentação | `nsseg` |
-| `doc_root_folder_id` | folder que contém os folders de domínio | `14319631` ("Serviços e sistemas") |
+| `doc_root_folder_id` | folder que contém os folders de domínio | `14319631` |
 
-Resolva cada valor nesta ordem: (1) informado pelo PO nesta conversa → (2) bloco
-de configuração no contexto → (3) variáveis de ambiente
-`CLAUDE_PLUGIN_OPTION_CONFLUENCE_SITE`, `CLAUDE_PLUGIN_OPTION_DOC_SPACE_KEY`,
-`CLAUDE_PLUGIN_OPTION_DOC_ROOT_FOLDER_ID` (se tiver terminal) → (4) regra de
-ausência abaixo. Nunca use valores de exemplo desta skill como se fossem
-configuração.
+Ordem de resolução: (1) informado pelo PO nesta conversa → (2) bloco de configuração no contexto → (3) variáveis `CLAUDE_PLUGIN_OPTION_CONFLUENCE_SITE`, `CLAUDE_PLUGIN_OPTION_DOC_SPACE_KEY`, `CLAUDE_PLUGIN_OPTION_DOC_ROOT_FOLDER_ID` (se tiver terminal) → (4) perguntar. Nunca use valores de exemplo como se fossem configuração.
 
-IDs técnicos são **resolvidos**, nunca pedidos ao PO nem fixados aqui:
+IDs técnicos são **resolvidos**, nunca pedidos ao PO:
+- **Cloud ID**: `getAccessibleAtlassianResources`, pelo URL de `confluence_site`. Sem site configurado e com um só recurso, use-o; com vários, pergunte o site pelo nome
+- **ID do espaço**: `getConfluenceSpaces` pela chave `doc_space_key`. Se a chave não estiver configurada e o usuário informou uma página existente por link, use o espaço do link. Caso contrário, pergunte onde publicar
+- **Folder raiz**: `doc_root_folder_id`; se vazio, pergunte o **nome** do folder e localize por `searchConfluenceUsingCql` (`space = "<doc_space_key>" AND type = folder AND title = "<nome>"`)
 
-- **Cloud ID**: `getAccessibleAtlassianResources`, escolhendo o recurso cuja URL
-  corresponde a `confluence_site`. Se o site não estiver configurado e houver
-  só um recurso, use-o; se houver vários, pergunte ao PO qual site (pelo nome,
-  não pelo ID).
-- **ID do espaço**: `getConfluenceSpaces` filtrando pela chave `doc_space_key`.
-  Se a chave não estiver configurada, **pare e pergunte** em qual espaço
-  publicar — não há espaço padrão — e lembre o PO de preencher `doc_space_key`
-  na configuração do plugin.
-- **Folder raiz dos domínios**: use `doc_root_folder_id`. Se estiver em branco,
-  pergunte o **nome** do folder que agrupa os domínios (ex: "Serviços e
-  sistemas") e localize por busca (`searchConfluenceUsingCql`, ex:
-  `space = "<doc_space_key>" AND type = folder AND title = "<nome>"`); sugira ao
-  PO preencher `doc_root_folder_id` com o ID encontrado.
-
-Estrutura esperada dentro do espaço:
-
-- Dentro do folder raiz, cada **domínio** (Averbação, Faturamento, Resseguro, Sinistro, Cotação, Emissão, Cosseguro...) é um **Folder** nativo do Confluence (container puro), não uma página. Se o domínio ainda não existir como Folder, ele precisa ser criado manualmente no Confluence (ferramentas de automação atuais só criam Páginas, não Folders nativos) — avise o usuário em vez de tentar criar via API.
-- Tickets (US e Bug) ficam no **Azure DevOps**, não no Jira, mesmo estando no mesmo tenant Atlassian que o Confluence.
-- O destino da documentação é **sempre** o espaço `doc_space_key`. O campo `confluence_spaces` vale só para a *leitura* da base de conhecimento no `/refine` — nunca publique nesses espaços por causa dele; só publique fora de `doc_space_key` se o PO pedir explicitamente nesta conversa.
+Tickets (US e Bug) ficam no **Azure DevOps**, não no Jira, mesmo com o Confluence no mesmo tenant Atlassian. O campo `confluence_spaces` vale só para leitura no `/refine`; nunca publique nesses espaços por causa dele.
 
 ## Relação com as outras ferramentas do product-tools
 
-- `refine` / `format-user-story` → geram a US **antes** do desenvolvimento. Esta skill documenta a regra **depois** que ela é verdade (US aprovada/entregue).
-- Se a conversa já tiver um documento do `/refine` ou uma US do `format-user-story`, use-o como insumo do intake: descrição, regras citadas na seção "📚 Base de Conhecimento", critérios de aceite (viram cenários Dado/Quando/Então) e exemplos. Mesmo assim, confirme com o PO o que já está em produção — US é intenção, a página documenta o que é verdade hoje.
-- `format-bug` → bugs **nunca** geram atualização de página nem de histórico (ver seção 3).
+- `refine` / `format-user-story` geram a US **antes** do desenvolvimento. Seus documentos são fonte válida aqui, mas confirme com o PO o que já está em produção
+- `format-bug`: ver "Coleta do material"
 
-## Quando usar
+## Princípios
 
-- Pedido para criar/documentar uma página de funcionalidade ou serviço
-- Pedido para criar/atualizar uma regra de negócio (macro, cross-sistema)
-- Pedido para registrar uma mudança no histórico de uma funcionalidade após uma US ser entregue
-- Pedido para "equalizar"/padronizar páginas existentes no espaço de documentação com o template
-
-## Os três tipos de página (nunca misturar)
-
-### 1. Página de funcionalidade (uma por serviço/funcionalidade, dentro do domínio)
-
-Estrutura fixa, nesta ordem — não pular seção; se faltar dado, perguntar, nunca inventar:
-
-1. **Título e descrição curta** — o que a funcionalidade faz
-2. **Regras de negócio aplicadas** — lista de **links** para páginas de regra (tipo 2 abaixo). Nunca reescrever o conteúdo da regra aqui
-3. **Regras específicas desta funcionalidade** — texto direto inline, sem link, sem Page Properties, sem dono/status (é só uma restrição local, não uma regra de negócio — ver teste abaixo)
-4. **Comportamento esperado** — cenários em **Dado / Quando / Então** (Gherkin), um por bloco, cada um testável e mapeável quase 1:1 para lógica de código
-5. **Exemplos** — tabela simples entrada → resultado esperado, para apoiar QA na massa de teste
-6. **Link para "Histórico de mudanças"** no rodapé — sempre como página **filha** separada, nunca como bloco na mesma página
-
-Princípio: a página documenta **o que é verdade hoje**. Não é um mural de tudo que já mudou — isso é papel do histórico (tipo 3).
-
-### 2. Página de regra de negócio (macro / cross-sistema)
-
-Só cria página própria se passar no teste: *outra funcionalidade, em outro sistema ou domínio, precisaria consultar essa regra também?* Se não, é regra específica (fica inline na página de funcionalidade, tipo 1 seção 3).
-
-Bloco de propriedades estruturadas (Page Properties) no topo:
-
-| Campo | Descrição |
-|---|---|
-| ID da regra | identificador único e estável, ex: `resseguro.sinistro.limite-franquia-auto` |
-| Domínio | ex: Resseguro, Averbação, Faturamento |
-| Escopo | Geral / Módulo específico |
-| Módulo(s) aplicável(is) | pode listar vários |
-| Regra geral relacionada | link, se especializa uma regra mais ampla |
-| Status | Rascunho / Em revisão / Aprovada / Em produção / Descontinuada |
-| Responsável | nome ou time |
-| Sistema(s) impactado(s) | ex: i4Pro Sinistro |
-
-Seções de conteúdo:
-- **Descrição** — o que a regra determina, em prosa curta
-- **Lógica da regra** — formato estruturado fixo, sempre a mesma sintaxe (ex: `SE valor_sinistro > franquia_minima ENTÃO aciona_ressegurador = true`), para leitura confiável por humano e por eventual interpretador automatizado
-- **Comentários** — usar o recurso nativo de comentários do Confluence, não uma seção manual
-
-Histórico/versionamento da regra em si = histórico de revisões nativo do Confluence. Não duplicar manualmente.
-
-### 3. Página "Histórico de mudanças" (filha de cada página de funcionalidade)
-
-Formato de changelog — mesmo princípio do `log.md` usado em OKF:
-
-| Data | US | Título | O que mudou na regra |
-|---|---|---|---|
-| 12/09/2026 | US-0002 | Melhoria no cálculo de massa de teste | Passou a considerar apólices com endosso ativo |
-
-Regras de inclusão:
-- Só entram **User Stories que alteram uma regra de negócio ou comportamento documentado**
-- **Bugs nunca entram** — correção de defeito não é mudança de regra, é a implementação sendo ajustada para bater com a regra que já existia
-- Campo "US" sempre linka direto para o work item no **Azure DevOps**
-- Atualização desta página nunca é automática — só depois que a US for aprovada/entregue, e só quando o usuário pedir explicitamente
-
-## Intake obrigatório (perguntar antes de montar conteúdo)
-
-Faça no máximo 3-4 perguntas por rodada. Nunca inventar regra de negócio, cenário Gherkin ou exemplo que o usuário não forneceu — proponha um rascunho calibrado ao domínio para validação, mas sinalize claramente o que é sugestão.
-
-Para página de funcionalidade:
-- [ ] Domínio (Averbação, Faturamento, Resseguro, etc.) e se o Folder do domínio já existe no espaço
-- [ ] Nome da funcionalidade/serviço (o título tem que ser único no espaço inteiro — nunca só "Solicitações" ou "Histórico" sem prefixo)
-- [ ] Descrição curta do que a funcionalidade faz
-- [ ] Quais regras de negócio (tipo 2) já existem e se aplicam aqui — se uma regra citada ainda não tem página, perguntar se deve ser criada agora ou só referenciada como pendente
-- [ ] Regras específicas locais (se houver)
-- [ ] Cenários Dado/Quando/Então — peça ao usuário em texto livre, ou ofereça um rascunho baseado na descrição para validação
-- [ ] Exemplos de entrada → resultado esperado
-- [ ] Se algum dado sensível (ex: percentual de retenção de tratado) exige Page Restriction específica
-
-Para página de regra de negócio, colete todos os campos da tabela de Page Properties antes de criar.
-
-## Fluxo de trabalho — publicação no Confluence
-
-1. Carregue as ferramentas do Atlassian Rovo se ainda não estiverem carregadas (`ToolSearch` por "Confluence")
-2. Resolva site, Cloud ID, espaço e folder raiz conforme "Contexto do espaço" acima
-3. Confirme o domínio (Folder) de destino dentro do folder raiz — localize com `searchConfluenceUsingCql` (ex: `space = "<doc_space_key>" AND type = folder AND title ~ "<nome do domínio>"`); nunca peça o ID técnico ao usuário, resolva por busca. Se o Folder não existir, avise que precisa ser criado manualmente antes (automação não cria Folders nativos)
-4. Antes de criar uma página nova num domínio que já tem outras páginas de funcionalidade, busque uma existente (`searchConfluenceUsingCql` + `getConfluencePage`) e use como referência de fidelidade ao template — a estrutura deve ficar consistente entre funcionalidades do mesmo domínio
-5. Crie a página de funcionalidade com `createConfluencePage` (`contentFormat: "html"`), `parentId` do Folder do domínio
-6. Logo em seguida, crie a página filha "Histórico de mudanças — <nome da funcionalidade>" com `parentId` da página de funcionalidade recém-criada, já com a tabela de changelog (vazia ou com a primeira linha, se houver)
-7. No rodapé da página de funcionalidade, garanta o link para a página de Histórico criada
-8. Devolva o link de cada página criada (`_links.webui` + base URL do site) e um resumo de 1-2 linhas — não repita o conteúdo inteiro no chat
-
-Para página de regra de negócio, mesmo fluxo, mas o `parentId` é o Folder do domínio diretamente (ou a página de regras gerais do domínio, se o usuário preferir agrupar) e o Page Properties block vai no topo via macro nativa do Confluence.
-
-Conversão de blocos comuns para HTML+ do Confluence:
-- Tabelas normais → `<table>`
-- Page Properties → macro nativa de Page Properties (não uma tabela solta)
-- Cenários Gherkin → bloco de código ou lista, um cenário por bloco, nunca todos corridos em um parágrafo só
-
-## Segurança e permissões
-
-- Preferir **Page Restrictions** por página/pasta a criar espaços separados — mantém navegação e busca unificadas
-- Regra com dado sensível (ex: percentual de retenção de tratado específico) deve ter visualização/edição restrita a grupo específico (ex: "Resseguro-Financeiro") — perguntar ao usuário se aplica
-- Restrição aplicada na pasta de domínio propaga para as páginas filhas — não precisa repetir por página
-
-## Página de índice / Sumário
-
-Papel puramente navegacional — nunca conter regra de negócio escrita diretamente nela. Usa a macro **Page Properties Report** do Confluence para agregar automaticamente regras gerais do domínio e regras específicas por módulo via filtro de labels (não só hierarquia de pastas) — uma regra pode aparecer em mais de um agrupamento sem duplicar a página, só adicionando o label correspondente.
-
-## Princípios gerais
-
-- Esta skill é a fonte canônica da estrutura (originada em PRODUTO_DEFINICOES.md, seção 8). Se o usuário pedir para mudar a estrutura de algum template, a mudança é feita aqui primeiro, e só depois replicada manualmente no Content Template do Confluence (Space Settings → Content Templates) — lembre o usuário desse segundo passo manual, esta skill não consegue criar Content Templates via API
-- Nunca inventar ID de regra, baseline, dono, status ou cenário — sempre perguntar ou marcar como "a definir"
-- Regra específica de funcionalidade nunca vira página própria, nunca ganha Page Properties — só texto inline (teste da seção 2 decide isso)
-- Bug nunca entra no histórico de mudanças — só US que altera regra/comportamento documentado
-- Não repita o conteúdo completo da página no chat depois de criar — resuma e aponte para o link
-- Ao equalizar uma página existente para seguir o template, compare seção a seção com uma página de referência do mesmo domínio antes de perguntar o que falta
+- Nada de análise sem cabeçalho completo e destino. Nada de alteração sem resolver as referências a outras funcionalidades
+- Sempre ler tudo (material + destino) antes de concluir; sempre devolver o documento completo e atualizado
+- Nunca inventar regra, valor, ID, dono, status ou cenário. Perguntar ou marcar `A DEFINIR`
+- Nunca apagar nem renumerar regra existente sem confirmação
+- Conflito entre fontes é decisão do usuário, não da skill
+- Nunca editar outra funcionalidade sem o usuário pedir e sem passar pelo Portão 1 para ela
