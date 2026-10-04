@@ -28,8 +28,9 @@ comando.
      conhecimento do seu módulo, separadas por vírgula (ex: `NSSEG,NSSEGCOT`)
    - `confluence_site` — opcional, ex: `nstech-empresa.atlassian.net`
    - `doc_space_key` — espaço onde o `/rule-update` publica, ex: `nsseg`
-   - `doc_root_folder_id` — opcional, ID do folder que agrupa os domínios
-     (ex: `14319631`, "Serviços e sistemas"); pegue na URL do folder
+   - `doc_root_folder_id` — opcional, ID do folder ou página raiz sob a qual
+     o `/rule-update` cria `plataforma / domínio / funcionalidade` (ex: `14319631`);
+     pegue na URL
 4. Conectar o conector **Atlassian** na conta (usado para ler o Confluence)
 5. Pronto — os comandos ficam disponíveis em qualquer sessão Cowork, inclusive
    pelo app mobile
